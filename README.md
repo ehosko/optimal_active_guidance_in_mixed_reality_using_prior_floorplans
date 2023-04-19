@@ -34,7 +34,8 @@ TBD
 
 ## WSL 2
 
-1. Setup mav_active_3d_planning package by following the documentation in [mav_active_3d_planning](mav_active_3d_planning/)
+1. Setup mav_active_3d_planning package by following the documentation in [mav_active_3d_planning](mav_active_3d_planning/)  
+(**Important**: Follow the readme in this repository instead of the one in the original mav_active_3d_planning repository. Dependencies and build instructions have changed.)
 
 2. Setup unrealcv for Unreal 4.25 environment by substituting original unreal_cv_ros dependency with [makeecat/unreal_cv_ros: Unreal CV ROS Perception Simulator (github.com)](https://github.com/makeecat/unreal_cv_ros)
 <!-- TODO: Change this dependency to personal fork -->

@@ -88,7 +88,7 @@ Packages and their dependencies:
     * `mav_control_rw` ([https://github.com/ethz-asl/mav_control_rw](https://github.com/ethz-asl/mav_control_rw))
 
 ## Installation
-Installation instructions for Linux.
+Installation instructions for Linux/WSL2.
 
 **Prerequisites**
 
@@ -120,8 +120,8 @@ sudo apt-get install python-wstool python-catkin-tools
 
 3. Download repo using a SSH key or via HTTPS: 
 ```shell script
-git clone git@github.com:ethz-asl/mav_active_3d_planning.git # SSH
-git clone https://github.com/ethz-asl/mav_active_3d_planning.git # HTTPS
+git clone git@github.com:michbaum/optimal_active_guidance_in_mixed_reality_using_prior_floorplans.git # SSH
+git clone https://github.com/michbaum/optimal_active_guidance_in_mixed_reality_using_prior_floorplans.git # HTTPS
 ```
 
 4. Download and install the dependencies of the packages you intend to use.
@@ -129,12 +129,12 @@ git clone https://github.com/ethz-asl/mav_active_3d_planning.git # HTTPS
    * **Full Install:** dependencies of **all** packages can be installed using rosinstall:
    ```shell script
    # system dependencies, replace melodic with your ros distro if necessary:
-   sudo apt-get install ros-melodic-cmake-modules ros-melodic-control-toolbox ros-melodic-joy ros-melodic-octomap-ros ros-melodic-mavlink ros-melodic-geographic-msgs autoconf libyaml-cpp-dev protobuf-compiler libgoogle-glog-dev liblapacke-dev libgeographic-dev
+   sudo apt-get install ros-melodic-cmake-modules ros-melodic-control-toolbox ros-melodic-joy ros-melodic-octomap-ros ros-melodic-mavlink ros-melodic-geographic-msgs ros-melodic-mavros autoconf libyaml-cpp-dev protobuf-compiler libgoogle-glog-dev liblapacke-dev libgeographic-dev
    pip install future unrealcv
 
    # If you already intialized ws tool use 'wstool merge -t'
-   wstool init . ./mav_active_3d_planning/mav_active_3d_planning_ssh.rosinstall # SSH
-   wstool init . ./mav_active_3d_planning/mav_active_3d_planning_https.rosinstall # HTTPS
+   wstool init . ./optimal_active_guidance_in_mixed_reality_using_prior_floorplans/mav_active_3d_planning_ssh.rosinstall # SSH
+   wstool init . ./optimal_active_guidance_in_mixed_reality_using_prior_floorplans/mav_active_3d_planning_https.rosinstall # HTTPS
    wstool update
    ```
    * **Partial Install:** Install dependencies of the packages you intend to use ([listed above](#Dependencies)) and remove unwanted packages from `mav_active_3d_planning/package.xml` as well as their source folders.
