@@ -129,7 +129,7 @@ git clone https://github.com/michbaum/optimal_active_guidance_in_mixed_reality_u
    * **Full Install:** dependencies of **all** packages can be installed using rosinstall:
    ```shell script
    # system dependencies, replace melodic with your ros distro if necessary:
-   sudo apt-get install ros-melodic-cmake-modules ros-melodic-control-toolbox ros-melodic-joy ros-melodic-octomap-ros ros-melodic-mavlink ros-melodic-geographic-msgs ros-melodic-mavros autoconf libyaml-cpp-dev protobuf-compiler libgoogle-glog-dev liblapacke-dev libgeographic-dev
+   sudo apt-get install ros-melodic-cmake-modules ros-melodic-control-toolbox ros-melodic-joy ros-melodic-octomap-ros ros-melodic-mavlink ros-melodic-geographic-msgs ros-melodic-mavros autoconf libyaml-cpp-dev protobuf19-dev protobuf19-compiler libgoogle-glog-dev liblapacke-dev libgeographic-dev
    pip install future unrealcv
 
    # If you already intialized ws tool use 'wstool merge -t'
