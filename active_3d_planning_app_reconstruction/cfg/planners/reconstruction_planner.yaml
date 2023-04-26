@@ -67,7 +67,8 @@ trajectory_evaluator:
     update_sections_separate: false
 
     following_evaluator:
-      type: "VoxelWeightEvaluator"
+    # TODO: type: "VoxelWeightEvaluator" This is apparently for outdoor_exploration
+      type: "NaiveEvaluator"
       visualize_sensor_view: true
       accurate_frontiers: true
       checking_distance: 2.0

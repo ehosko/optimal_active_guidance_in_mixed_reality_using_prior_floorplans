@@ -50,13 +50,23 @@ rosed unreal_cv_ros unreal_ros_client.py
 
 ## Unreal
 
-1. launch active_3d_planning experiment for Maze
+1. Open the project (e.g., Maze) in Unreal 4.25 as explained above
+
+1. Launch an active_3d_planning experiment for the project (e.g., Maze). You can currently choose between 3 different planners: example_config (simple frontier based), exploration_planner (RRT* based) and reconstruction_planner (from the original mav_active_3d_planning repository and paper).
+
+Run this command to check for a correct setup:
 
 ```
-roslaunch active_3d_planning_app_reconstruction example.launch planner_config:=planners/exploration_planner.yaml experiment_config:=Maze.yaml uecv_mode:=standard
+roslaunch active_3d_planning_app_reconstruction example.launch planner_config:=planners/example_config.yaml experiment_config:=Maze.yaml uecv_mode:=standard
 ```
 
-2. You can see Unreal Game Playe changing views, and rviz shows planned trajectory and moving the agents. If the ros node crash, try rebuilding "unreal_cv_ros" package
+Run this command to collect data of a run with a certain planner (here exploration_planner):
+
+```
+roslaunch active_3d_planning_app_reconstruction run_experiment.launch planner_config:=planners/exploration_planner.yaml experiment_config:=Maze.yaml uecv_mode:=standard data_directory:=/path/to/data/directory
+```
+
+2. You can see Unreal Game Play changing views, and rviz shows planned trajectory and moving agents. If the ros node crash, try rebuilding "unreal_cv_ros" package
 
 ## Isaac Sim
 

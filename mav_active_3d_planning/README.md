@@ -124,7 +124,7 @@ git clone git@github.com:michbaum/optimal_active_guidance_in_mixed_reality_using
 git clone https://github.com/michbaum/optimal_active_guidance_in_mixed_reality_using_prior_floorplans.git # HTTPS
 ```
 
-4. Download and install the dependencies of the packages you intend to use.
+4. Download and install the dependencies of the packages you intend to use. (Full Install recommended)
 
    * **Full Install:** dependencies of **all** packages can be installed using rosinstall:
    ```shell script
@@ -141,9 +141,9 @@ git clone https://github.com/michbaum/optimal_active_guidance_in_mixed_reality_u
 
 5. Source and compile: 
 ```shell script
-source ../devel/setup.bash
 catkin build mav_active_3d_planning # Builds this package only
 catkin build # Builds entire workspace, recommended for full install.
+source ../devel/setup.bash # -> optionally add source WS_FOLDER/devel/setup.bash to your ~/.bashrc file
 ```
 
 ## Data Repository
