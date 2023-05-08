@@ -26,7 +26,7 @@ The project was intended to run on a Windows machine with WSL2 support. One woul
 
 5. Drag FusionCameraActor5 Under UnrealCVPawn
 
-6. Change the location of FusionCameraActor5 to 0,0,0 (default will be 0, 0, 150.0)
+6. Change the location of FusionCameraActor5 to 0,0,0 (default will be 0, 0, -150.0)
 
 **Nvidia Omniverse Isaac Sim**
 
@@ -37,13 +37,13 @@ TBD
 1. Setup mav_active_3d_planning package by following the documentation in [mav_active_3d_planning](mav_active_3d_planning/)  
 (**Important**: Follow the readme in this repository instead of the one in the original mav_active_3d_planning repository. Dependencies and build instructions have changed.)
 
-2. Setup unrealcv for Unreal 4.25 environment by substituting original unreal_cv_ros dependency with [makeecat/unreal_cv_ros: Unreal CV ROS Perception Simulator (github.com)](https://github.com/makeecat/unreal_cv_ros)
-<!-- TODO: Change this dependency to personal fork -->
+2. Setup unrealcv for Unreal 4.25 environment by substituting original unreal_cv_ros dependency with [michbaum/unreal_cv_ros: Unreal CV ROS Perception Simulator (github.com)](https://github.com/michbaum/unreal_cv_ros)
 
 3. Setup IP of unreal_cv_ros
 ```
 rosed unreal_cv_ros unreal_ros_client.py
 # change ip of unreal_ros_client to its host ip: client = Client(('HOST_IP',9000))
+IMPORTANT: This is really the host ip of your machine, not localhost
 ```
 
 # Run Experiments
