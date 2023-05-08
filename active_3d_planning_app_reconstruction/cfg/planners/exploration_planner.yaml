@@ -76,7 +76,7 @@ trajectory_evaluator:
         sampling_time: 0.0
         ray_length: 5.0
         focal_length: 320.0
-        resolution_x: 172 # 640-90/172-30/127-22.5 deg fov
+        resolution_x: 172 # 640-90/172-30/127-22.5 deg fov TODO: Maybe these intrinsics are wrong
         resolution_y: 480
         downsampling_factor: 5.0
 

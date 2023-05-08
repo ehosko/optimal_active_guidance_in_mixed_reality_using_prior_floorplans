@@ -12,7 +12,7 @@
   <arg name="verbose_voxblox" default="false"/>
     
   <!-- Unreal Routine arguments -->
-  <arg name="uecv_mode" default="fast"/>
+  <arg name="uecv_mode" default="standard"/>
   <arg name="slowdown" default="0.0"/>
   <arg name="delay" default="3.0"/>  
   
@@ -21,7 +21,7 @@
   <arg name="flatten_distance" default="6.0"/>
   <arg name="maximum_distance" default="0.0"/>
   
-  <!-- Odometry  arguments (random_walk, ground_truth) -->
+  <!-- Odometry arguments (random_walk, ground_truth) -->
   <!-- TODO: maybe use ground_truth in the beginning? -->
   <arg name="odom_noise_model" default="random_walk"/>
   
@@ -159,10 +159,13 @@
       <param name="use_tf_transforms" value="false" />
       <param name="tsdf_voxel_size" value="$(arg voxel_size)" />
       <param name="tsdf_voxels_per_side" value="$(arg voxels_per_side)" />
-      <param name="update_mesh_every_n_sec" value="0.0" />   
+      <!-- TODO: Investigate if this doesn't publish anything at all -->
+      <!-- <param name="update_mesh_every_n_sec" value="0.0" />    -->
+      <param name="update_mesh_every_n_sec" value="1.0" />
       <param name="publish_traversable" value="false" />    
-      <param name="publish_pointclouds" value="false" />              
-    
+      <!-- TODO: maybe change to true? -->
+      <!-- <param name="publish_pointclouds" value="false" /> -->
+      <param name="publish_pointclouds" value="true" />
     	<!-- General Settings -->
       <remap from="odometry" to="/$(arg mav_name)/ground_truth/odometry" />
       <remap from="command/trajectory" to="/$(arg mav_name)/command/trajectory" />
@@ -173,5 +176,5 @@
   </group>
 
   <!-- RVIZ Visualization -->
-  <node type="rviz" name="rviz_voxblox" pkg="rviz" args="-d $(find active_3d_planning_app_reconstruction)/cfg/experiments/experiment_visualization.rviz"/>
+  <node type="rviz" name="rviz_voxblox" pkg="rviz" args="-d $(find active_3d_planning_app_reconstruction)/cfg/experiments/altered_experiment_visualization.rviz"/>
 </launch>
