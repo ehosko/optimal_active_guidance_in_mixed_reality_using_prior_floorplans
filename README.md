@@ -22,11 +22,9 @@ The project was intended to run on a Windows machine with WSL2 support. One woul
 
 3. Open the project in the Unreal 4.25
 
+4. For a performance boost, go into the editor settings and disable the "Use Less CPU when in Background" option.
+
 4. Play the game
-
-5. Drag FusionCameraActor5 Under UnrealCVPawn
-
-6. Change the location of FusionCameraActor5 to 0,0,0 (default will be 0, 0, -150.0)
 
 **Nvidia Omniverse Isaac Sim**
 
@@ -38,12 +36,13 @@ TBD
 (**Important**: Follow the readme in this repository instead of the one in the original mav_active_3d_planning repository. Dependencies and build instructions have changed.)
 
 2. Setup unrealcv for Unreal 4.25 environment by substituting original unreal_cv_ros dependency with [michbaum/unreal_cv_ros: Unreal CV ROS Perception Simulator (github.com)](https://github.com/michbaum/unreal_cv_ros)
+(This has already been taken care of if you followed the instructions above)
 
 3. Setup IP of unreal_cv_ros
 ```
 rosed unreal_cv_ros unreal_ros_client.py
 # change ip of unreal_ros_client to its host ip: client = Client(('HOST_IP',9000))
-IMPORTANT: This is really the host ip of your machine, not localhost
+IMPORTANT: This is really the host ip of your machine, not(!) localhost
 ```
 
 # Run Experiments
@@ -57,16 +56,20 @@ IMPORTANT: This is really the host ip of your machine, not localhost
 Run this command to check for a correct setup:
 
 ```
-roslaunch active_3d_planning_app_reconstruction example.launch planner_config:=planners/example_config.yaml experiment_config:=Maze.yaml uecv_mode:=standard
+roslaunch active_3d_planning_app_reconstruction example.launch planner_config:=planners/example_config.yaml
 ```
 
 Run this command to collect data of a run with a certain planner (here exploration_planner):
 
 ```
-roslaunch active_3d_planning_app_reconstruction run_experiment.launch planner_config:=planners/exploration_planner.yaml experiment_config:=Maze.yaml uecv_mode:=standard data_directory:=/path/to/data/directory
+roslaunch active_3d_planning_app_reconstruction run_experiment.launch planner_config:=planners/exploration_planner.yaml data_directory:=/path/to/data/directory
 ```
 
 2. You can see Unreal Game Play changing views, and rviz shows planned trajectory and moving agents. If the ros node crash, try rebuilding "unreal_cv_ros" package
+
+3. Note that - to be able to use the footage for later map building with a VIO system - the simulation time has been slowed down tenfold. To change this time factor, open
+the gazebo_empty.world XML file under catkin_ws/src/unreal_cv_ros/unreal_cv_ros/content/ and change the real_time_update_rate on line 33 (! not the max_step_size !) alongside
+the real_time_factor (needs to be max_step_size * real_time_update_rate). With a real-time factor of 1.0, you can expect around 1.5hz of gray image data.
 
 ## Isaac Sim
 
