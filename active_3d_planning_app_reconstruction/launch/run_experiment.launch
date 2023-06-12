@@ -17,14 +17,17 @@
   <arg name="delay" default="3.0"/>  
   
   <!-- Unreal Sensor arguments (ground_truth, kinect, gaussian_depth_noise)-->
-  <arg name="model_type" default="gaussian_depth_noise"/>
+  <!-- TODO: (michbaum) First consider ground truth sensor data -->
+  <!-- <arg name="model_type" default="gaussian_depth_noise"/> -->
+  <arg name="model_type" default="ground_truth"/>
   <arg name="flatten_distance" default="6.0"/>
   <arg name="maximum_distance" default="0.0"/>
   
   <!-- Odometry  arguments (random_walk, ground_truth)-->
   <arg name="use_rovio" default="false"/>
-  <!-- TODO: Maybe use ground truth in the beginning? -->
-  <arg name="odom_noise_model" default="random_walk"/>
+  <!-- TODO: (michbaum) Maybe use ground truth in the beginning? -->
+  <!-- <arg name="odom_noise_model" default="random_walk"/> -->
+  <arg name="odom_noise_model" default="ground_truth"/>
   
   <!--  Planner arguments (can use a single config or compose the planner)-->
   <arg name="use_separate_configs" default="false"/>
@@ -36,9 +39,10 @@
   <arg name="experiment_config" default="Maze.yaml"/>
   <arg name="record_data" default="true"/>
   <arg name="record_visualization" default="true"/>
-  <arg name="data_directory" default="/home/michbaum/ETH/optag/data"/> 
+  <arg name="data_directory" default="/home/michbaum/optag_ws/data"/> 
+  <!-- Frequency in seconds when the current map state should be saved to disk -->
   <arg name="data_frequency" default="30.0" />
-  <arg name="time_limit" default="30" />
+  <arg name="time_limit" default="360" /> <!-- in minutes, full map takes ~30min, due to sim_time_factor set to 6h -->
 
 
   <!-- *** Experiment Execution *** -->
@@ -55,6 +59,8 @@
     <arg name="paused" value="true" />
     <arg name="gui" value="$(arg gui)" />
     <arg name="verbose" value="$(arg verbose_gazebo)"/>
+    <!-- TODO: (michbaum) Should already be set to true but just to make sure -->
+    <arg name="use_sim_time" value="true" />
   </include>
 
   <group ns="$(arg mav_name)">
@@ -62,7 +68,8 @@
     <include file="$(find rotors_gazebo)/launch/spawn_mav.launch">
       <arg name="mav_name" value="$(arg mav_name)" />
       <arg name="model" value="$(find rotors_description)/urdf/mav_generic_odometry_sensor.gazebo" />
-      <arg name="enable_ground_truth" value="true" />
+      <!-- Enable ground truth just publishes ground truth imu and odometry data alongside the flawed data. Should always be true. -->
+      <arg name="enable_ground_truth" value="true" /> 
       <arg name="enable_logging" value="false" />
       <arg name="z" value="0" />
     </include>
@@ -92,6 +99,7 @@
       <remap from="imu0" to="ground_truth/imu" />
     </node>
     <node name="odometry_noise_model" pkg="active_3d_planning_app_reconstruction" type="gps_odometry_simulator.py" output="screen" unless="$(arg use_rovio)">
+      <!-- If the noise model is ground truth, we do not apply any of these uncertainties (which is expected). -->
       <param name="position_uncertainty" value="0.05"/>
       <param name="roll_pitch_uncertainty" value="1.5" />
       <param name="yaw_uncertainty" value="5.0" />
@@ -99,6 +107,7 @@
       <param name="publish_tf" value="true" />
       <remap from="odometry_in" to="ground_truth/odometry" />
     </node> 
+    <!-- TODO: It seems like the noisy odometry data is not really taken in anywhere (called /firefly/odometry_noise_model/odometry_out) -->
 
     <!-- static camera transform -->
     <node pkg="tf" type="static_transform_publisher" name="tf_camera_to_link" args="0 0 0 -0.5 0.5 -0.5 0.5 /camera_link /camera 100"/>  
@@ -109,8 +118,7 @@
     <node name="unreal_ros_client" pkg="unreal_cv_ros" type="unreal_ros_client.py" required="true" output="screen">
       <param name="mode" value="$(arg uecv_mode)"/>
       <param name="publish_tf" value="false"/>
-      <!-- TODO: eventually change back to true -->
-      <param name="collision_on" value="false"/>
+      <param name="collision_on" value="true"/>
       <param name="slowdown" value="$(arg slowdown)"/>
       <remap from="odometry" to="/$(arg mav_name)/ground_truth/odometry" />
     </node>
@@ -121,7 +129,9 @@
       <param name="flatten_distance" value="$(arg flatten_distance)"/>
       <param name="model_type" value="$(arg model_type)" />
       <param name="maximum_distance" value="$(arg maximum_distance)" />
-      <param name="publish_gray_images" value="$(arg use_rovio)" />
+      <!-- We need the gray images for map construction in maplab -->
+      <!-- <param name="publish_gray_images" value="$(arg use_rovio)" />  -->
+      <param name="publish_gray_images" value="true" />
       <param name="k_mu_2" value="0.0024" />
       <param name="k_sigma_2" value="0.0024" />
       <remap from="ue_sensor_raw" to="unreal_ros_client/ue_sensor_raw" />
@@ -151,8 +161,10 @@
       <param name="eval_frequency" value="$(arg data_frequency)" />
       <param name="time_limit" value="$(arg time_limit)" /> <!-- in minutes -->
     </node>
-    
-    <!-- Record a rosbag of the visualization-->
+  </group>
+
+  <!-- Record a rosbag of the visualization-->
+    <!--
     <node pkg="rosbag" type="record" name="rosbag_vis_recorder"
        args="record -o $(arg data_directory)/tmp_bags/tmp_bag /rosout 
                                                               /clock 
@@ -161,8 +173,17 @@
                                                               /firefly/reference_trajectory 
                                                               /firefly/base_link 
                                                               /planner/trajectory_visualization" 
-       if="$(eval arg('record_data') and arg('record_visualization'))"/>
-  </group>
+       if="$(eval arg('record_data') and arg('record_visualization'))"/> -->
+  <node pkg="rosbag" type="record" name="rosbag_vis_recorder"
+      args="record -o $(arg data_directory)/sim_bags/sim_bags /cam0/image_raw
+                                                              /imu0/ground_truth
+                                                              /imu0
+                                                              /firefly/ground_truth/position" 
+      if="$(eval arg('record_data') and arg('record_visualization'))">
+      <remap from="cam0/image_raw" to="/unreal/unreal_sensor_model/ue_gray_image_out" />
+      <remap from="imu0" to="/$(arg mav_name)/imu" />
+      <remap from="imu0/ground_truth" to="/$(arg mav_name)/ground_truth/imu" />
+  </node>
 
   <group ns="planner">
     <!-- Voxblox -->

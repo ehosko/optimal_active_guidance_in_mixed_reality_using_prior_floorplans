@@ -67,7 +67,7 @@ trajectory_evaluator:
     update_sections_separate: false
 
     following_evaluator:
-    # TODO: original type: "VoxelWeightEvaluator" This is apparently for outdoor_exploration
+    # TODO: original type: "VoxelWeightEvaluator" This is apparently for outdoor_exploration, for indoor Lukas recommends the NaiveEvaluator
       type: "NaiveEvaluator"
       visualize_sensor_view: true
       accurate_frontiers: true
