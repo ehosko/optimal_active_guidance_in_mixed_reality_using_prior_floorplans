@@ -45,6 +45,12 @@ rosed unreal_cv_ros unreal_ros_client.py
 IMPORTANT: This is really the host ip of your machine, not(!) localhost
 ```
 
+# Debugging
+
+## VSCode
+
+To be able to run the debugger on Python 2.7 code utilized in ROS, you need to downgrade your Pyhton extension to version: v2021.9.124654278
+
 # Run Experiments
 
 ## Unreal
