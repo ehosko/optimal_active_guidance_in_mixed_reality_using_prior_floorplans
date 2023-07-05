@@ -42,7 +42,7 @@
   <arg name="data_directory" default="/home/michbaum/optag_ws/data"/> 
   <!-- Frequency in seconds when the current map state should be saved to disk -->
   <arg name="data_frequency" default="30.0" />
-  <arg name="time_limit" default="360" /> <!-- in minutes, full map takes ~30min, due to sim_time_factor set to 6h -->
+  <arg name="time_limit" default="30" /> <!-- in minutes, full map takes ~30min, due to sim_time_factor set to 6h -->
 
 
   <!-- *** Experiment Execution *** -->
