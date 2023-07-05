@@ -44,6 +44,7 @@ rosed unreal_cv_ros unreal_ros_client.py
 # change ip of unreal_ros_client to its host ip: client = Client(('HOST_IP',9000))
 IMPORTANT: This is really the host ip of your machine, not(!) localhost
 ```
+4. Setup [MapLab](https://github.com/michbaum/maplab) for ROVIOLI & evaluation
 
 # Debugging
 
