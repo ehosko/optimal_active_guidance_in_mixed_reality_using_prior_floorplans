@@ -123,6 +123,21 @@ bool RosPlanner::requestNextTrajectory() {
 }
 
 void RosPlanner::odomCallback(const nav_msgs::Odometry& msg) {
+  // TODO: (michbaum) Add a dummy function that would calculate the ground truth pose from the current one
+  //                  Save the ground truth pose alongside the odometry pose from the VIO/SLAM system for
+  //                  later use in the cost calculation.
+
+  // SomeFunction that computes the ground turth via floorplan alignment -> relative ground truth/offset, not absolute
+  // save ground truth rig pose for cost computation
+
+  // Just query the gt poses with the same timestamp as the image
+
+  // ApproximateTime (chat message) -> maybe needed for the dummy node, if the slam system does not use the original timestamp of the images
+
+  // Use a time syncronizer class to sync up the drifty odometry from the SLAM system with the ground truth system
+  // One way to correlate them is via the timestamp of the published image -> make sure that the VIO/SLAM system
+  // publishes the odometry with the same timestamp
+
   // Track the current pose
   current_position_ =
       Eigen::Vector3d(msg.pose.pose.position.x, msg.pose.pose.position.y,

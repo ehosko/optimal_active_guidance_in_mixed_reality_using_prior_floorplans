@@ -67,8 +67,8 @@ trajectory_evaluator:
     update_sections_separate: false
 
     following_evaluator:
-    # TODO: original type: "VoxelWeightEvaluator" This is apparently for outdoor_exploration, for indoor Lukas recommends the NaiveEvaluator
-      type: "NaiveEvaluator"
+    # TODO: (michbaum) original type: "VoxelWeightEvaluator" This is apparently for outdoor_exploration, for indoor Lukas recommends the NaiveEvaluator
+      type: "NaiveEvaluator" # This determines the gain formulation (currently frontier based)
       visualize_sensor_view: true
       accurate_frontiers: true
       checking_distance: 2.0
@@ -91,10 +91,10 @@ trajectory_evaluator:
         downsampling_factor: 5.0
 
       cost_computer:
-        type: "SegmentTime"
+        type: "SegmentTime" # This determines the cost formulation (currently just time needed to execute)
 
       value_computer:
-        type: "GlobalNormalizedGain"
+        type: "GlobalNormalizedGain" # This function just accumulates the value in the RRT Graph, probably shouldn't be touched
 
       next_selector:
         type: "SubsequentBest"

@@ -45,6 +45,7 @@ bool YawPlanningEvaluator::checkParamsValid(std::string* error_message) {
   return TrajectoryEvaluator::checkParamsValid(error_message);
 }
 
+// TODO: (michbaum) This is the current gain computation
 bool YawPlanningEvaluator::computeGain(TrajectorySegment* traj_in) {
   // Init
   double start_yaw = traj_in->trajectory.front().getYaw();

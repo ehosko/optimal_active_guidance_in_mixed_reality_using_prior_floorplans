@@ -410,6 +410,7 @@ void OnlinePlanner::expandTrajectories() {
     new_segments_++;
   }
 
+  // TODO: (michbaum) here the gain & costs gets called
   // Evaluate newly added segments: Gain
   for (int i = 0; i < created_segments.size(); ++i) {
     trajectory_evaluator_->computeGain(created_segments[i]);

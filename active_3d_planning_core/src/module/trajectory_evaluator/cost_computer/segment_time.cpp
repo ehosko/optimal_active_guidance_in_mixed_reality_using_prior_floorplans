@@ -13,6 +13,7 @@ void SegmentTime::setupFromParamMap(Module::ParamMap* param_map) {
   setParam<bool>(param_map, "accumulate", &p_accumulate_, false);
 }
 
+// TODO: (michbaum) This is the current cost computation used
 bool SegmentTime::computeCost(TrajectorySegment* traj_in) {
   if (traj_in->trajectory.size() < 2) {
     traj_in->cost = 0.0;

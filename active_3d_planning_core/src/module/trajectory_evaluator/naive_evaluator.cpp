@@ -17,6 +17,7 @@ void NaiveEvaluator::setupFromParamMap(Module::ParamMap* param_map) {
   SimulatedSensorEvaluator::setupFromParamMap(param_map);
 }
 
+// TODO: (michbaum) I think this is the gain used at the moment, simple frontier based
 bool NaiveEvaluator::computeGainFromVisibleVoxels(TrajectorySegment* traj_in) {
   if (!traj_in->info) {
     traj_in->gain = 0.0;
