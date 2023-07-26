@@ -34,10 +34,10 @@ class EvalData(object):
                                               5.0)  # Save rate in seconds
         self.time_limit = rospy.get_param(
             '~time_limit', 0.0)  # Maximum sim duration in minutes, 0 for inf
-        self.reset_unreal_cv_ros = rospy.get_param(
-            '~reset_unreal_cv_ros', True)  # On shutdown reset pose to 0
-        self.ns_unreal_cv_ros = rospy.get_param('~ns_unreal_cv_ros',
-                                                "/unreal/unreal_ros_client")
+        self.reset_isaac_cv_ros = rospy.get_param(
+            '~reset_isaac_cv_ros', True)  # On shutdown reset pose to 0
+        self.ns_isaac_cv_ros = rospy.get_param('~ns_isaac_cv_ros',
+                                                "/isaac/isaac_ros_client")
 
         self.eval_walltime_0 = None
         self.eval_rostime_0 = None
@@ -85,9 +85,9 @@ class EvalData(object):
                 os.path.join(self.eval_directory, "data_log.txt"), 'a')
 
             # Subscribers, Services
-            self.ue_out_sub = rospy.Subscriber("ue_out_in",
+            self.isaac_out_sub = rospy.Subscriber("isaac_out_in",
                                                PointCloud2,
-                                               self.ue_out_callback,
+                                               self.isaac_out_callback,
                                                queue_size=10)
             self.collision_sub = rospy.Subscriber("collision",
                                                   String,
@@ -108,11 +108,11 @@ class EvalData(object):
 
     def launch_simulation(self):
         rospy.loginfo(
-            "Experiment setup: waiting for unreal MAV simulation to setup...")
-        # Wait for unreal simulation to setup
+            "Experiment setup: waiting for isaac MAV simulation to setup...")
+        # Wait for isaac simulation to setup
         if self.startup_timeout > 0.0:
             try:
-                rospy.wait_for_message("unreal_simulation_ready", String,
+                rospy.wait_for_message("isaac_simulation_ready", String,
                                        self.startup_timeout)
             except rospy.ROSException:
                 self.stop_experiment(
@@ -120,8 +120,8 @@ class EvalData(object):
                     str(self.startup_timeout) + "s).")
                 return
         else:
-            rospy.wait_for_message("unreal_simulation_ready", String)
-        rospy.loginfo("Waiting for unreal MAV simulation to setup... done.")
+            rospy.wait_for_message("isaac_simulation_ready", String)
+        rospy.loginfo("Waiting for isaac MAV simulation to setup... done.")
 
         # Launch planner (by service, every planner needs to advertise this
         # service when ready)
@@ -239,7 +239,7 @@ class EvalData(object):
             datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S] ") + text +
             "\n")
 
-    def ue_out_callback(self, _):
+    def isaac_out_callback(self, _):
         if self.evaluate:
             self.eval_n_pointclouds += 1
 
@@ -249,12 +249,12 @@ class EvalData(object):
         reason = "Stopping the experiment: " + reason
         if self.evaluate:
             self.writelog(reason)
-        if self.reset_unreal_cv_ros:
+        if self.reset_isaac_cv_ros:
             try:
-                # If unreal is running, this will reset it, otherwise map is
+                # If isaac is running, this will reset it, otherwise map is
                 # already in initial state
                 terminate_srv = rospy.ServiceProxy(
-                    self.ns_unreal_cv_ros + "/terminate_with_reset", SetBool)
+                    self.ns_isaac_cv_ros + "/terminate_with_reset", SetBool)
                 terminate_srv(True)
             except:
                 pass
