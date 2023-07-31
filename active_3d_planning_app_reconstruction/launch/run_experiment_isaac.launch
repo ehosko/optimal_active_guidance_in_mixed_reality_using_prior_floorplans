@@ -12,8 +12,6 @@
   <arg name="verbose_voxblox" default="false"/>
     
   <!-- Isaac Routine arguments -->
-  <!-- <arg name="uecv_mode" default="standard"/>
-  <arg name="slowdown" default="0.0"/> -->
   <arg name="delay" default="3.0"/>  
   
   <!-- Isaac Sensor arguments (ground_truth, kinect, gaussian_depth_noise)-->
@@ -37,7 +35,6 @@
   <arg name="visualize" default="true"/>
   
   <!--  Experiment arguments --> 
-   <!--TODO: (michbaum) Need a new .yaml file  -->
   <arg name="experiment_config" default="Warehouse.yaml"/>
   <arg name="record_data" default="true"/>
   <arg name="record_visualization" default="true"/>
@@ -61,7 +58,6 @@
     <arg name="paused" value="true" />
     <arg name="gui" value="$(arg gui)" />
     <arg name="verbose" value="$(arg verbose_gazebo)"/>
-    <!-- TODO: (michbaum) Should already be set to true but just to make sure -->
     <arg name="use_sim_time" value="true" />
   </include>
 
@@ -110,6 +106,7 @@
       <remap from="odometry_in" to="ground_truth/odometry" />
     </node> 
     <!-- TODO: It seems like the noisy odometry data is not really taken in anywhere (called /firefly/odometry_noise_model/odometry_out) -->
+    <!-- But publishes the camera link frame, investigate. -->
 
     <!-- static camera transform -->
     <node pkg="tf" type="static_transform_publisher" name="tf_camera_to_link" args="0 0 0 -0.5 0.5 -0.5 0.5 /camera_link /camera 100"/>  
@@ -119,10 +116,8 @@
   <group ns="isaac">
     <!-- Isaac vision client -->
     <node name="isaac_ros_client" pkg="isaac_cv_ros" type="isaac_ros_client.py" required="true" output="screen">
-      <!-- <param name="mode" value="$(arg uecv_mode)"/> -->
       <param name="publish_tf" value="false"/>
-      <!-- <param name="collision_on" value="true"/> -->
-      <!-- <param name="slowdown" value="$(arg slowdown)"/> -->
+      <!-- <param name="collision_on" value="true"/> --> <!-- Currently not implemented. -->
       <remap from="odometry" to="/$(arg mav_name)/ground_truth/odometry" />
       <remap from="camera_info" to="isaac_sim/camera_info" />
       <remap from="rgb" to="isaac_sim/rgb" />
@@ -162,8 +157,7 @@
       <param name="ns_planner" value="/planner/planner_node" />
       <param name="ns_voxblox" value="/planner/voxblox_node" />
       <param name="delay" value="$(arg delay)" />
-      <!-- <param name="startup_timeout" value="30.0" /> -->
-      <param name="startup_timeout" value="300.0" />
+      <param name="startup_timeout" value="30.0" />
       <param name="evaluate" value="$(arg record_data)" />
       <param name="eval_directory" value="$(arg data_directory)" />
       <param name="eval_frequency" value="$(arg data_frequency)" />
@@ -173,8 +167,8 @@
     <!-- static camera transform for the simulation (Isaac has a different convention than ROS!) -->
     <!-- static_transform_publisher x y z qx qy qz qw frame_id child_frame_id  period_in_ms -->
     <node pkg="tf" type="static_transform_publisher" name="tf_sim_world_to_world" args="-5.0 -5.0 -2.0 0.0 0.0 0.0 1.0 /world /sim_world 100"/>
-    <node pkg="tf" type="static_transform_publisher" name="tf_camera_sim_link_to_link" args="0 0 0 -0.5, 0.5, 0.5, -0.5 /camera_link /camera_sim_link 100"/>
-    <node pkg="tf" type="static_transform_publisher" name="tf_camera_sim_to_sim_link" args="0 0 0 0.0, 0.707, 0.0, 0.707 /camera_sim_link /camera_sim 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="tf_camera_sim_frame_to_link" args="0 0 0 -0.5, 0.5, 0.5, -0.5 /camera_link /camera_sim_frame 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="tf_camera_sim_to_sim_frame" args="0 0 0 0.0, 0.707, 0.0, 0.707 /camera_sim_frame /camera_sim 100"/>
   </group>
 
   <!-- Record a rosbag of the visualization-->
