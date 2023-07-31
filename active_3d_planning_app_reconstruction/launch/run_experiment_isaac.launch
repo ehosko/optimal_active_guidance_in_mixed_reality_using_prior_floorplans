@@ -170,8 +170,11 @@
       <param name="time_limit" value="$(arg time_limit)" /> <!-- in minutes -->
     </node>
 
-    <!-- static camera transform -->
-    <node pkg="tf" type="static_transform_publisher" name="tf_camera_sim_to_camera" args="5.0 5.0 2.0 0.7071068 0.0 0.0 0.7071068 /camera /camera_sim 100"/> 
+    <!-- static camera transform for the simulation (Isaac has a different convention than ROS!) -->
+    <!-- static_transform_publisher x y z qx qy qz qw frame_id child_frame_id  period_in_ms -->
+    <node pkg="tf" type="static_transform_publisher" name="tf_sim_world_to_world" args="-5.0 -5.0 -2.0 0.0 0.0 0.0 1.0 /world /sim_world 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="tf_camera_sim_link_to_link" args="0 0 0 -0.5, 0.5, 0.5, -0.5 /camera_link /camera_sim_link 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="tf_camera_sim_to_sim_link" args="0 0 0 0.0, 0.707, 0.0, 0.707 /camera_sim_link /camera_sim 100"/>
   </group>
 
   <!-- Record a rosbag of the visualization-->
