@@ -124,6 +124,13 @@
       <remap from="depth" to="isaac_sim/depth" />
       <remap from="teleport" to="isaac_sim/teleport" />
     </node>
+
+    <!-- Launch the topic_tools throttle node -->
+    <node name="throttle_topic" pkg="topic_tools" type="throttle">
+        <remap from="input" to="isaac_ros_client/isaac_sensor_raw"/>
+        <remap from="output" to="isaac_sensor_raw_throttle"/>
+        <param name="rate" value="8"/> <!-- Given in hz. -->
+    </node>
     
     <!-- Isaac sensor model -->
     <node name="isaac_sensor_model" pkg="isaac_cv_ros" type="sensor_model.py" output="screen">
@@ -136,7 +143,7 @@
       <param name="publish_gray_images" value="true" />
       <param name="k_mu_2" value="0.0024" />
       <param name="k_sigma_2" value="0.0024" />
-      <remap from="isaac_sensor_raw" to="isaac_ros_client/isaac_sensor_raw" />
+      <remap from="isaac_sensor_raw" to="throttle_topic/isaac_sensor_raw_throttle" />
     </node>
 
     <!-- Simulation manager for launching the MAV and monitoring -->
