@@ -35,7 +35,8 @@
   <arg name="visualize" default="true"/>
   
   <!--  Experiment arguments --> 
-  <arg name="experiment_config" default="Warehouse.yaml"/>
+  <!-- <arg name="experiment_config" default="Warehouse.yaml"/> -->
+  <arg name="experiment_config" default="Maze.yaml"/>
   <arg name="record_data" default="true"/>
   <arg name="record_visualization" default="true"/>
   <arg name="data_directory" default="/home/michbaum/Projects/optag/data"/> 
@@ -108,6 +109,10 @@
     <!-- TODO: It seems like the noisy odometry data is not really taken in anywhere (called /firefly/odometry_noise_model/odometry_out) -->
     <!-- But publishes the camera link frame, investigate. -->
 
+    <!-- Launch the topic_tools throttle node -->
+    <!-- <node name="topic_throttler" type="throttle" pkg="topic_tools" args="messages ground_truth/odometry 30 ground_truth/odometry_throttled" /> -->
+    
+
     <!-- static camera transform -->
     <node pkg="tf" type="static_transform_publisher" name="tf_camera_to_link" args="0 0 0 -0.5 0.5 -0.5 0.5 /camera_link /camera 100"/>  
   </group>
@@ -116,9 +121,9 @@
   <group ns="isaac">
     <!-- Isaac vision client -->
     <node name="isaac_ros_client" pkg="isaac_cv_ros" type="isaac_ros_client.py" required="true" output="screen">
-      <param name="publish_tf" value="false"/>
+      <!-- <param name="publish_tf" value="false"/> -->
       <!-- <param name="collision_on" value="true"/> --> <!-- Currently not implemented. -->
-      <remap from="odometry" to="/$(arg mav_name)/ground_truth/odometry" />
+      <remap from="odometry" to="/$(arg mav_name)/ground_truth/odometry" /> <!-- TODO: Change back to non-throttled! -->
       <remap from="camera_info" to="isaac_sim/camera_info" />
       <remap from="rgb" to="isaac_sim/rgb" />
       <remap from="depth" to="isaac_sim/depth" />
@@ -126,11 +131,7 @@
     </node>
 
     <!-- Launch the topic_tools throttle node -->
-    <node name="throttle_topic" pkg="topic_tools" type="throttle">
-        <remap from="input" to="isaac_ros_client/isaac_sensor_raw"/>
-        <remap from="output" to="isaac_sensor_raw_throttle"/>
-        <param name="rate" value="8"/> <!-- Given in hz. -->
-    </node>
+    <node name="topic_throttler" type="throttle" pkg="topic_tools" args="messages isaac_ros_client/isaac_sensor_raw 8.5 isaac_ros_client/isaac_sensor_raw_throttled" />
     
     <!-- Isaac sensor model -->
     <node name="isaac_sensor_model" pkg="isaac_cv_ros" type="sensor_model.py" output="screen">
@@ -141,9 +142,10 @@
       <!-- We need the gray images for map construction in maplab -->
       <!-- <param name="publish_gray_images" value="$(arg use_rovio)" />  -->
       <param name="publish_gray_images" value="true" />
+      <param name="publish_transform_stamped" value="true"/>
       <param name="k_mu_2" value="0.0024" />
       <param name="k_sigma_2" value="0.0024" />
-      <remap from="isaac_sensor_raw" to="throttle_topic/isaac_sensor_raw_throttle" />
+      <remap from="isaac_sensor_raw" to="isaac_ros_client/isaac_sensor_raw_throttled" />
     </node>
 
     <!-- Simulation manager for launching the MAV and monitoring -->
@@ -173,7 +175,10 @@
 
     <!-- static camera transform for the simulation (Isaac has a different convention than ROS!) -->
     <!-- static_transform_publisher x y z qx qy qz qw frame_id child_frame_id  period_in_ms -->
-    <node pkg="tf" type="static_transform_publisher" name="tf_sim_world_to_world" args="-5.0 -5.0 -2.0 0.0 0.0 0.0 1.0 /world /sim_world 100"/>
+    <!-- Warehouse -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="tf_sim_world_to_world" args="-5.0 -5.0 -2.0 0.0 0.0 0.0 1.0 /world /sim_world 100"/> -->
+    <node pkg="tf" type="static_transform_publisher" name="tf_sim_world_to_world" args="0.0 0.0 -1.5 0.0 0.0 0.0 1.0 /world /sim_world 100"/>
+    <!-- Maze -->
     <node pkg="tf" type="static_transform_publisher" name="tf_camera_sim_frame_to_link" args="0 0 0 -0.5, 0.5, 0.5, -0.5 /camera_link /camera_sim_frame 100"/>
     <node pkg="tf" type="static_transform_publisher" name="tf_camera_sim_to_sim_frame" args="0 0 0 0.0, 0.707, 0.0, 0.707 /camera_sim_frame /camera_sim 100"/>
   </group>
@@ -202,11 +207,15 @@
 
   <group ns="planner">
     <!-- Voxblox -->
+    <!-- This executes esdf_server_node.cc -->
     <node name="voxblox_node" pkg="voxblox_ros" type="esdf_server" output="screen" args="-alsologtostderr">
       <remap from="pointcloud" to="/isaac/isaac_sensor_model/isaac_sensor_out"/>
-      <remap from="transform" to="/$(arg mav_name)/rovio/transform" if="$(arg use_rovio)"/>
-      <rosparam command="load" file="$(find active_3d_planning_app_reconstruction)/cfg/voxblox/transforms.yaml" if="$(arg use_rovio)"/> 
+      <!-- <remap from="transform" to="/$(arg mav_name)/rovio/transform" if="$(arg use_rovio)"/> -->
+      <remap from="transform" to="/isaac/isaac_sensor_model/transform"/>
+      <!-- <rosparam command="load" file="$(find active_3d_planning_app_reconstruction)/cfg/voxblox/transforms.yaml" if="$(arg use_rovio)"/>  -->
+      <rosparam command="load" file="$(find active_3d_planning_app_reconstruction)/cfg/voxblox/transforms.yaml"/> 
       <param name="use_tf_transforms" value="$(eval arg('use_rovio') == false)"/>
+      <param name="use_tf_transforms" value="false"/>
       <param name="publish_tsdf_map" value="true" />
       <param name="publish_esdf_map" value="true" />
       <param name="tsdf_voxel_size" value="$(arg voxel_size)" />

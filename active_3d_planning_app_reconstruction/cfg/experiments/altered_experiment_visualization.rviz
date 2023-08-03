@@ -55,34 +55,34 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /firefly/reference_trajectory
       Name: ReferenceTrajectory
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Axes
-      Enabled: true
+      Enabled: false
       Length: 0.4000000059604645
       Name: Axes
       Radius: 0.10000000149011612
       Reference Frame: firefly/base_link
-      Value: true
+      Value: false
     - Class: rviz/Axes
       Enabled: true
       Length: 1
       Name: Axes
       Radius: 0.10000000149011612
-      Reference Frame: camera_sim
+      Reference Frame: camera
       Value: true
     - Class: rviz/Axes
-      Enabled: true
+      Enabled: false
       Length: 1
       Name: Axes
       Radius: 0.10000000149011612
       Reference Frame: world
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -124,7 +124,12 @@ Visualization Manager:
           Marker Topic: /planner/trajectory_visualization
           Name: trajectory_vizualization
           Namespaces:
-            {}
+            candidate_text: true
+            candidate_trajectories: true
+            canidate_gains: true
+            completed_trajectory: true
+            current_goal: true
+            trajectory_evaluation: true
           Queue Size: 100
           Value: true
         - Class: voxblox_rviz_plugin/VoxbloxMesh
@@ -259,7 +264,7 @@ Visualization Manager:
           Topic: /firefly/ground_truth/odometry
           Unreliable: false
           Value: false
-      Enabled: false
+      Enabled: true
       Name: Planner
     - Class: rviz/Group
       Displays:
@@ -319,7 +324,7 @@ Visualization Manager:
           Use Fixed Frame: true
           Use rainbow: true
           Value: false
-      Enabled: false
+      Enabled: true
       Name: Isaac
     - Class: rviz/Group
       Displays:
@@ -385,7 +390,7 @@ Visualization Manager:
           Use Fixed Frame: true
           Use rainbow: true
           Value: false
-      Enabled: false
+      Enabled: true
       Name: VoxBlox
     - Class: rviz/Image
       Enabled: true
@@ -421,6 +426,21 @@ Visualization Manager:
       Normalize Range: true
       Queue Size: 2
       Transport Hint: raw
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.10000000149011612
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Arrow
+      Topic: /isaac/isaac_sensor_model/pose
       Unreliable: false
       Value: true
   Enabled: true
@@ -466,10 +486,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 0.11979711055755615
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.3059072494506836
+      Yaw: 3.110907793045044
     Saved: ~
 Window Geometry:
   Displays:

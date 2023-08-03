@@ -146,6 +146,8 @@ catkin build # Builds entire workspace, recommended for full install.
 source ../devel/setup.bash # -> optionally add source WS_FOLDER/devel/setup.bash to your ~/.bashrc file
 ```
 
+*Troubleshooting*: In case the catkin build fails due to glog issues, try to set the USE_SYSTEM_GLOG variable to "OFF" in the CMakeLists.txt file of glog catkin.
+
 ## Data Repository
 Related resources, such as experiment scenarios and ground truth point clouds, can be downloaded from [here](https://www.polybox.ethz.ch/index.php/s/6vhPDINcISbEogg). 
 
