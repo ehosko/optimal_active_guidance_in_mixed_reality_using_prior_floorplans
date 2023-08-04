@@ -124,6 +124,8 @@
       <!-- <param name="publish_tf" value="false"/> -->
       <!-- <param name="collision_on" value="true"/> --> <!-- Currently not implemented. -->
       <remap from="odometry" to="/$(arg mav_name)/ground_truth/odometry" /> <!-- TODO: Change back to non-throttled! -->
+      <param name="publish_color_images" value="false" />
+      <param name="publish_gray_images" value="true" />
       <remap from="camera_info" to="isaac_sim/camera_info" />
       <remap from="rgb" to="isaac_sim/rgb" />
       <remap from="depth" to="isaac_sim/depth" />
@@ -141,7 +143,9 @@
       <param name="maximum_distance" value="$(arg maximum_distance)" />
       <!-- We need the gray images for map construction in maplab -->
       <!-- <param name="publish_gray_images" value="$(arg use_rovio)" />  -->
-      <param name="publish_gray_images" value="true" />
+      <!-- TODO: These are pretty much only for debugging, they get released alongside the pointcloud message. -->
+      <param name="publish_color_images" value="false" />
+      <param name="publish_gray_images" value="false" />
       <param name="publish_transform_stamped" value="true"/>
       <param name="k_mu_2" value="0.0024" />
       <param name="k_sigma_2" value="0.0024" />
@@ -200,7 +204,7 @@
                                                               /imu0
                                                               /firefly/ground_truth/position" 
       if="$(eval arg('record_data') and arg('record_visualization'))">
-      <remap from="cam0/image_raw" to="/isaac/isaac_sensor_model/isaac_gray_image_out" />
+      <remap from="cam0/image_raw" to="/isaac/isaac_ros_client/isaac_gray_image_out" />
       <remap from="imu0" to="/$(arg mav_name)/imu" />
       <remap from="imu0/ground_truth" to="/$(arg mav_name)/ground_truth/imu" />
   </node>

@@ -8,6 +8,7 @@ Panels:
         - /Status1
         - /Axes2
         - /Axes3
+        - /Image3
       Splitter Ratio: 0.7352941036224365
     Tree Height: 325
   - Class: rviz/Selection
@@ -418,7 +419,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /isaac/isaac_sensor_model/isaac_gray_image_out
+      Image Topic: /isaac/isaac_ros_client/isaac_gray_image_out
       Max Value: 1
       Median window: 5
       Min Value: 0
