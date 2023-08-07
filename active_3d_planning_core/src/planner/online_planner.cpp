@@ -177,6 +177,7 @@ void OnlinePlanner::planningLoop() {
   }
 }
 
+// TODO: (michbaum) Include transform from drifty to ground truth frame
 void OnlinePlanner::loopIteration() {
   // Continuosly expand the trajectory space
   for (int i = 0; i < p_expand_batch_; ++i) {
@@ -188,7 +189,7 @@ void OnlinePlanner::loopIteration() {
     min_new_value_reached_ = checkMinNewValue(current_segment_);
   }
 
-  // After finishing the current segment, execute the next one
+  // After finishing the current segment, execute the next one - target reached gets set in the Odometry callback
   if (target_reached_) {
     if (new_segment_tries_ >= p_max_new_tries_ && p_max_new_tries_ > 0) {
       // Maximum tries reached: force next segment
@@ -262,7 +263,7 @@ bool OnlinePlanner::requestNextTrajectory() {
 
   // Visualize candidates
   std::vector<TrajectorySegment*> trajectories_to_vis;
-  current_segment_->getTree(&trajectories_to_vis);
+  current_segment_->getTree(&trajectories_to_vis); // TODO: (michbaum) It's possible that we need to transform in this callback? Or possibly only after we choose a candidate
   trajectories_to_vis.erase(
       trajectories_to_vis.begin());  // remove current segment (root)
   if (p_visualize_) {
@@ -311,6 +312,7 @@ bool OnlinePlanner::requestNextTrajectory() {
                                                     *current_segment_);
   current_segment_->trajectory = trajectory;
 
+  // TODO: (michbaum) Check this function
   requestMovement(trajectory);
   target_position_ = trajectory.back().position_W;
   target_yaw_ = trajectory.back().getYaw();

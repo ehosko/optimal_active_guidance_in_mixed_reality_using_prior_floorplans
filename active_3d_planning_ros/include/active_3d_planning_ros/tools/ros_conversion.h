@@ -30,6 +30,11 @@ inline void quaternionEigenToMsg(const Eigen::Quaterniond& eigen,
   msg->w = eigen.w();
 }
 
+// TODO: (michbaum) Here we need to transform the trajectory that has been concipated in the
+//                  drifty Odometry frame from the SLAM system to the ground truth pose of the
+//                  simulation.
+//                  On a real system, we could keep the goal pose in the drifty frame, since that's
+//                  were the agent really has to move.
 inline void msgMultiDofJointTrajectoryPointFromEigen(
     const EigenTrajectoryPoint& trajectory_point,
     trajectory_msgs::MultiDOFJointTrajectoryPoint* msg) {

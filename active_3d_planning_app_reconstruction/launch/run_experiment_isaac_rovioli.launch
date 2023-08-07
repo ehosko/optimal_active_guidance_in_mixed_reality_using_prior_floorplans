@@ -22,8 +22,7 @@
   <arg name="maximum_distance" default="0.0"/>
   
   <!-- Odometry  arguments (random_walk, ground_truth)-->
-  <!-- TODO: (michbaum) Need to figure out how to use this. -->
-  <arg name="use_rovio" default="false"/>
+  <arg name="use_rovioli" default="true"/>
   <!-- TODO: (michbaum) Maybe use ground truth in the beginning? -->
   <!-- <arg name="odom_noise_model" default="random_walk"/> -->
   <arg name="odom_noise_model" default="ground_truth"/>
@@ -43,7 +42,8 @@
   <!-- Frequency in seconds when the current map state should be saved to disk -->
   <arg name="data_frequency" default="30.0" />
   <arg name="time_limit" default="30" /> <!-- in minutes, full map takes ~30min, due to sim_time_factor set to 6h -->
-
+  <!-- If we use a simulation to gather data or a real device (not implemented yet) -->
+  <arg name="use_sim" default="true" /> 
 
   <!-- *** Experiment Execution *** -->
   
@@ -59,7 +59,7 @@
     <arg name="paused" value="true" />
     <arg name="gui" value="$(arg gui)" />
     <arg name="verbose" value="$(arg verbose_gazebo)"/>
-    <arg name="use_sim_time" value="true" />
+    <arg name="use_sim_time" value="true" /> 
   </include>
 
   <group ns="$(arg mav_name)">
@@ -91,13 +91,17 @@
     </node>
     
     <!-- Odometry: noise model / rovio -->
-    <node pkg="rovio" type="rovio_node" name="rovio" output="screen" if="$(arg use_rovio)">
+    <!-- <node pkg="rovio" type="rovio_node" name="rovio" output="screen" if="$(arg use_rovioli)">
       <param name="filter_config" value="$(find active_3d_planning_app_reconstruction)/cfg/rovio/rovio.info"/>
       <param name="camera0_config" value="$(find active_3d_planning_app_reconstruction)/cfg/rovio/isaac_cam0.yaml"/>
-      <remap from="cam0/image_raw" to="/isaac/isaac_sensor_model/isaac_gray_image_out" />
-      <remap from="imu0" to="ground_truth/imu" />
-    </node>
-    <node name="odometry_noise_model" pkg="active_3d_planning_app_reconstruction" type="gps_odometry_simulator.py" output="screen" unless="$(arg use_rovio)">
+      <remap from="cam0/image_raw" to="/isaac/isaac_ros_client/isaac_gray_image_out" />
+      <remap from="imu0" to="imu" />
+    </node> -->
+
+    <!-- TODO: If use_rovioli=true, run "roslaunch maplab_node maze-maplab-node-w-rovioli.launch" in another terminal that sources the maplab workspace
+               prior to running this launch file. -->
+
+    <node name="odometry_noise_model" pkg="active_3d_planning_app_reconstruction" type="gps_odometry_simulator.py" output="screen" unless="$(arg use_rovioli)">
       <!-- If the noise model is ground truth, we do not apply any of these uncertainties (which is expected). -->
       <param name="position_uncertainty" value="0.05"/>
       <param name="roll_pitch_uncertainty" value="1.5" />
@@ -141,8 +145,6 @@
       <param name="flatten_distance" value="$(arg flatten_distance)"/>
       <param name="model_type" value="$(arg model_type)" />
       <param name="maximum_distance" value="$(arg maximum_distance)" />
-      <!-- We need the gray images for map construction in maplab -->
-      <!-- <param name="publish_gray_images" value="$(arg use_rovio)" />  -->
       <!-- TODO: These are pretty much only for debugging, they get released alongside the pointcloud message. -->
       <param name="publish_color_images" value="false" />
       <param name="publish_gray_images" value="false" />
@@ -179,29 +181,18 @@
 
     <!-- static camera transform for the simulation (Isaac has a different convention than ROS!) -->
     <!-- static_transform_publisher x y z qx qy qz qw frame_id child_frame_id  period_in_ms -->
+    
     <!-- Maze -->
     <node pkg="tf" type="static_transform_publisher" name="tf_sim_world_to_world" args="0.0 0.0 -1.5 0.0 0.0 0.0 1.0 /world /sim_world 100" if="$(eval experiment_config == 'Maze.yaml')"/>
     
     <!-- Warehouse -->
     <node pkg="tf" type="static_transform_publisher" name="tf_sim_world_to_world" args="-5.0 -5.0 -2.0 0.0 0.0 0.0 1.0 /world /sim_world 100" if="$(eval experiment_config == 'Warehouse.yaml')"/>
     
-    <!-- Both -->
     <node pkg="tf" type="static_transform_publisher" name="tf_camera_sim_frame_to_firefly" args="0 0 0 -0.5, 0.5, 0.5, -0.5 /$(arg mav_name)/base_link /camera_sim_frame 100"/>
     <!-- This one is wrong -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="tf_camera_sim_to_sim_frame" args="0 0 0 0.0, 0.707, 0.0, 0.707 /camera_sim_frame /camera_sim 100"/> -->
   </group>
 
-  <!-- Record a rosbag of the visualization-->
-    <!--
-    <node pkg="rosbag" type="record" name="rosbag_vis_recorder"
-       args="record -o $(arg data_directory)/tmp_bags/tmp_bag /rosout 
-                                                              /clock 
-                                                              /tf 
-                                                              /planner/voxblox_node/mesh 
-                                                              /firefly/reference_trajectory 
-                                                              /firefly/base_link 
-                                                              /planner/trajectory_visualization" 
-       if="$(eval arg('record_data') and arg('record_visualization'))"/> -->
   <node pkg="rosbag" type="record" name="rosbag_vis_recorder"
       args="record -o $(arg data_directory)/sim_bags/sim_bags /cam0/image_raw
                                                               /imu0/ground_truth
@@ -218,11 +209,14 @@
     <!-- This executes esdf_server_node.cc -->
     <node name="voxblox_node" pkg="voxblox_ros" type="esdf_server" output="screen" args="-alsologtostderr">
       <remap from="pointcloud" to="/isaac/isaac_sensor_model/isaac_sensor_out"/>
-      <!-- <remap from="transform" to="/$(arg mav_name)/rovio/transform" if="$(arg use_rovio)"/> -->
-      <remap from="transform" to="/isaac/isaac_sensor_model/transform"/>
-      <!-- <rosparam command="load" file="$(find active_3d_planning_app_reconstruction)/cfg/voxblox/transforms.yaml" if="$(arg use_rovio)"/>  -->
+      <remap from="transform" to="/rovioli/Transform_G_I" if="$(arg use_rovioli)"/> <!-- TODO: Change topic accordingly! -->
+      <!-- Possible topics:
+           /rovioli/odom_T_M_I
+           /rovioli/Transform_G_I
+           /odometry/maplab_odom_T_M_I <- this one is used in the maplab_node launch file
+            -->
+      <remap from="transform" to="/isaac/isaac_sensor_model/transform" unless="$(arg use_rovioli)"/>
       <rosparam command="load" file="$(find active_3d_planning_app_reconstruction)/cfg/voxblox/transforms.yaml"/> 
-      <!-- <param name="use_tf_transforms" value="$(eval arg('use_rovio') == false)"/> -->
       <param name="use_tf_transforms" value="false"/>
       <param name="publish_tsdf_map" value="true" />
       <param name="publish_esdf_map" value="true" />
@@ -246,9 +240,14 @@
       <param name="tsdf_voxels_per_side" value="$(arg voxels_per_side)" />
       <param name="update_mesh_every_n_sec" value="0.0" />   
       <param name="publish_traversable" value="false" />         
-    
-      <remap from="odometry" to="/$(arg mav_name)/ground_truth/odometry" />
-      <remap from="command/trajectory" to="/$(arg mav_name)/command/trajectory" />
+      <!-- TODO: Find the right Odometry topic that corresponds to the transform -->
+      <!-- <remap from="odometry" to="/$(arg mav_name)/ground_truth/odometry" /> -->
+      <remap from="odometry" to="/rovioli/odom_T_M_I" />
+      <!-- TODO: Ingest this Odom for statistics and for our policy -->
+      <remap from="ground_truth_odometry" to="/$(arg mav_name)/ground_truth/odometry" />
+      <!-- TODO: Maybe change this to trajectory_drifty and have a new node transform the frame of it? -->
+      <remap from="command/trajectory" to="/$(arg mav_name)/command/trajectory_drifty" if="$(arg use_sim)" />
+      <remap from="command/trajectory" to="/$(arg mav_name)/command/trajectory" unless="$(arg use_sim)"/>
       <param name="verbose" value="$(arg verbose_planner)" />
       <param name="visualize" value="$(arg visualize)" />
       <param name="log_performance" value="$(arg record_data)" />
@@ -260,6 +259,15 @@
       <!-- Modular Config -->    
       <rosparam command="load" file="$(find active_3d_planning_app_reconstruction)/cfg/$(arg planner_config)"/>
     </node>    
+
+    <!-- Trajectory transformer in case we use a simulation that operates in a "ground_truth" simulation frame -->
+    <!-- Otherwise there is no need for a transform since our agent relies on the same drifty odometry for his localization -->
+    <node name="trajectory_transformer" pkg="active_3d_planning_app_reconstruction" type="trajectory_transformer.py" if="$(arg use_sim)" >
+      <remap from="input_trajectory" to="/$(arg mav_name)/command/trajectory_drifty" />
+      <remap from="output_trajectory" to="/$(arg mav_name)/command/trajectory" />
+      <param name="drifty_odom_frame" value="rovioli/imu" />
+      <param name="simulation_odom_frame" value="$(arg mav_name)/base_link" />
+    </node> 
    
  </group>
 

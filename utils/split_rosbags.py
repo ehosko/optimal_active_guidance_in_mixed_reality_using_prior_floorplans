@@ -45,7 +45,7 @@ def split_rosbag(rosbag_path, split_duration):
 
 def main():
     # Provide the path to the rosbag file and the desired split duration in seconds
-    rosbag_path = "/home/michbaum/optag_ws/data/sim_bags/query_trajectory.bag"
+    rosbag_path = "/home/michbaum/Projects/optag/data/sim_bags/warehouse_slowdown_gt.bag"
     split_duration = 7.0
 
     # Call the function to split the rosbag
