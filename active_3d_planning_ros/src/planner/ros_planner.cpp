@@ -155,8 +155,25 @@ void RosPlanner::odomCallback(const nav_msgs::Odometry& msg) {
       if (p_replan_yaw_threshold_ <= 0 ||
           defaults::angleDifference(target_yaw_, yaw) <
               p_replan_yaw_threshold_) {
+        trajectory_timeout_ = ::ros::Time::now();
+        // Set the timestamp when we reached the target to evaluate the accumulated drift at this position
+        setTimestamp(msg.header.stamp);
         target_reached_ = true;
       }
+    }
+    // Check if we can't reach the goal pose due to drift - trigger a replanning from current position
+    // TODO: (michbaum) Confirm, that that's what really happens
+    ::ros::Time current_time = ::ros::Time::now();
+    ::ros::Duration timeout = ::ros::Duration(5.0); // Timeout after not reaching the goal in 5 seconds
+    if(current_time - trajectory_timeout_ > timeout) {
+      trajectory_timeout_ = ::ros::Time::now();
+      // Set the timestamp when we reached the target to evaluate the accumulated drift at this position
+      setTimestamp(msg.header.stamp);
+      target_reached_ = true;
+
+      std::stringstream ss;
+      ss << "Replanning due to timeout!";
+      printInfo(ss.str());
     }
   }
 }

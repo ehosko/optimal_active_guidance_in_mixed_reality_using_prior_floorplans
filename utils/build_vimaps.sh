@@ -4,7 +4,7 @@
 source /home/michbaum/Projects/maplab/devel/setup.bash
 
 # Define the path to the directory containing your rosbag files
-rosbag_dir="/home/michbaum/Projects/optag/data/sim_bags/warehouse_slowdown_gt_split"
+rosbag_dir="/home/michbaum/Projects/optag/data/sim_bags/warehouse_slowdown_gt_without_windows_split"
 
 # Define the package containing your launch file
 package="maplab_node"
@@ -24,7 +24,7 @@ for rosbag_file in "${rosbag_files[@]}"; do
     number=$(echo "$rosbag_file" | awk -F '[^0-9]*' '$0=$2')
 
     # Check if the number is greater than 174
-    if (( number > 174 )); then
+    if (( number >= 0 )); then
         echo "Playing rosbag: $rosbag_file"
         
         # Start the launch file in the background
@@ -38,6 +38,6 @@ for rosbag_file in "${rosbag_files[@]}"; do
         kill -INT $launch_pid
         wait $launch_pid
     else
-        echo "Skipping rosbag: $rosbag_file (Number is not greater than 174)"
+        echo "Skipping rosbag: $rosbag_file (Number is not greater equal 0)"
     fi
 done

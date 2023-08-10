@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+// ROS 
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <std_srvs/SetBool.h>
@@ -63,6 +64,7 @@ class RosPlanner : public OnlinePlanner {
 
   // variables
   ::ros::Time ros_timing_;      // track simulated time
+  ::ros::Time trajectory_timeout_; // track if trajector unreachable due to drift
   std::clock_t cpu_srv_timer_;  // To get CPU usage for service
   std::map<std::string, int>
       visualization_overwrite_counter_;  // store the previous number of

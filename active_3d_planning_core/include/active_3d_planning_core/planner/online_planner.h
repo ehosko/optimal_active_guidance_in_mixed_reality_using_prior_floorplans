@@ -20,6 +20,13 @@
 #include "active_3d_planning_core/planner/planner_I.h"
 #include "active_3d_planning_core/tools/defaults.h"
 
+// ROS
+#include <ros/ros.h>
+#include <tf2_ros/transform_listener.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <fstream>
+
 namespace active_3d_planning {
 
 class OnlinePlanner : public PlannerI, public ModuleBase {
@@ -57,6 +64,12 @@ class OnlinePlanner : public PlannerI, public ModuleBase {
   SystemConstraints& getSystemConstraints() override {
     return *system_constraints_;
   }
+
+  // OptAG ROS related stuff
+  void logRelativeErrorToCsv();
+  std::tuple<Eigen::Vector3d, Eigen::Quaterniond> getPose(std::string source_frame, std::string target_frame);
+  void setTimestamp(const ::ros::Time timestamp);
+ 
 
   // logging and printing
   void printInfo(const std::string& text) override;
@@ -109,6 +122,7 @@ class OnlinePlanner : public PlannerI, public ModuleBase {
   bool p_visualize_;  // Publish visualization of completed path, current gain,
   // new candidates, ...
   bool p_log_performance_;  // Whether to write a performance log file
+  bool p_drift_performance_; // Whether to write a drift estimation log file
   int p_max_new_segments_;  // After this count is reached no more segments are
   // expanded (0 to ignore)
   int p_min_new_segments_;  // Until this count is reached the next segment is
@@ -126,6 +140,17 @@ class OnlinePlanner : public PlannerI, public ModuleBase {
   // every segment
   bool p_highlight_executed_trajectory_;  // true: print executed trajectory in
                                           // bold red
+
+  // OptAG and ROS related stuff
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
+  std::string driftlogfile_;
+  std::ofstream drift_log_file_;
+  std::string world_frame_;
+  std::string gt_frame_;
+  std::string drifty_frame_;
+  ::ros::Time timestamp_;
+ 
 
   // methods
   virtual void initializePlanning();

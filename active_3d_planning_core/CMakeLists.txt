@@ -37,6 +37,7 @@ cs_add_library(${PROJECT_NAME}
         src/module/trajectory_evaluator/cost_computer/no_cost.cpp
         src/module/trajectory_evaluator/cost_computer/segment_length.cpp
         src/module/trajectory_evaluator/cost_computer/segment_time.cpp
+        src/module/trajectory_evaluator/cost_computer/drift_estimator.cpp
         src/module/trajectory_evaluator/evaluator_updater/constrained_updater.cpp
         src/module/trajectory_evaluator/evaluator_updater/prune_direct.cpp
         src/module/trajectory_evaluator/evaluator_updater/reset_tree.cpp

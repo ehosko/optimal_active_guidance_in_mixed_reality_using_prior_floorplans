@@ -12,11 +12,12 @@
 #include <utility>
 #include <vector>
 
+
 namespace active_3d_planning {
 
 OnlinePlanner::OnlinePlanner(ModuleFactory* factory,
                              Module::ParamMap* param_map)
-    : factory_(factory), running_(false), planning_(false) {
+    : factory_(factory), running_(false), planning_(false), tf_listener_(tf_buffer_) {
   // Setup params
   OnlinePlanner::setupFromParamMap(param_map);
 }
@@ -26,6 +27,27 @@ OnlinePlanner::~OnlinePlanner() {
   if (perf_log_file_.is_open()) {
     perf_log_file_.close();
   }
+  if (drift_log_file_.is_open()) {
+    drift_log_file_.close();
+  }
+}
+
+Eigen::Vector3d transformToEigenPosition(const geometry_msgs::TransformStamped& transformStamped)
+{
+    Eigen::Vector3d position;
+    position.x() = transformStamped.transform.translation.x;
+    position.y() = transformStamped.transform.translation.y;
+    position.z() = transformStamped.transform.translation.z;
+    return position;
+}
+
+Eigen::Quaterniond transformToEigenQuaternion(const geometry_msgs::TransformStamped& transformStamped)
+{
+    Eigen::Quaterniond quaternion(transformStamped.transform.rotation.w, 
+                                  transformStamped.transform.rotation.x, 
+                                  transformStamped.transform.rotation.y, 
+                                  transformStamped.transform.rotation.z);
+    return quaternion;
 }
 
 void OnlinePlanner::setupFromParamMap(Module::ParamMap* param_map) {
@@ -41,6 +63,7 @@ void OnlinePlanner::setupFromParamMap(Module::ParamMap* param_map) {
                  false);
   setParam<bool>(param_map, "visualize", &p_visualize_, true);
   setParam<bool>(param_map, "log_performance", &p_log_performance_, false);
+  setParam<bool>(param_map, "log_drift_performance", &p_drift_performance_, false);
   setParam<bool>(param_map, "visualize_gain", &p_visualize_gain_, false);
   setParam<bool>(param_map, "highlight_executed_trajectory",
                  &p_highlight_executed_trajectory_, false);
@@ -78,6 +101,11 @@ void OnlinePlanner::setupFromParamMap(Module::ParamMap* param_map) {
   back_tracker_ =
       getFactory().createModule<BackTracker>(args, *this, verbose_modules);
 
+  // Setup ground truth frames for our policy and the drift logging
+  setParam<std::string>(param_map, "world_frame", &world_frame_, "world");
+  setParam<std::string>(param_map, "ground_truth_frame", &gt_frame_, "firefly/base_link");
+  setParam<std::string>(param_map, "drifty_frame", &drifty_frame_, "rovioli/imu");
+
   // Setup performance log
   if (p_log_performance_) {
     std::string log_dir("");
@@ -98,6 +126,24 @@ void OnlinePlanner::setupFromParamMap(Module::ParamMap* param_map) {
           << "RunTime,NTrajectories,NTrajAfterUpdate,Select,Expand,Gain,"
              "Cost,Value,NextBest,UpdateTG,UpdateTE,Visualization,Total";
     }
+  }
+
+  // Setup drift estimation
+  if (p_drift_performance_) {
+    std::string log_dir("");
+    std::string log_file("");
+    setParam<std::string>(param_map, "drift_log_dir", &log_dir, "");
+    setParam<std::string>(param_map, "drift_log_file", &log_file, "GIVE_ME_A_NAME.csv");
+    driftlogfile_ = log_dir + log_file;
+    drift_log_file_.open(driftlogfile_.c_str());
+    if (!drift_log_file_.is_open())
+      {
+        ROS_ERROR("Failed to open log file: %s", driftlogfile_.c_str());
+        ros::shutdown();
+      }
+    
+    drift_log_file_ << "Timestamp,RelativePoseX,RelativePoseY,RelativePoseZ,RelativeOrientW,RelativeOrientX,RelativeOrientY,RelativeOrientZ,TranslationError,AngleError\n";
+    drift_log_file_.flush();
   }
 
   // Force lazy initialization of modules (call every function once)
@@ -191,6 +237,10 @@ void OnlinePlanner::loopIteration() {
 
   // After finishing the current segment, execute the next one - target reached gets set in the Odometry callback
   if (target_reached_) {
+    // Log the relative achieved pose error for statistics on the drift per planner
+    if (p_drift_performance_) {
+      logRelativeErrorToCsv();
+    }
     if (new_segment_tries_ >= p_max_new_tries_ && p_max_new_tries_ > 0) {
       // Maximum tries reached: force next segment
       requestNextTrajectory();
@@ -263,7 +313,7 @@ bool OnlinePlanner::requestNextTrajectory() {
 
   // Visualize candidates
   std::vector<TrajectorySegment*> trajectories_to_vis;
-  current_segment_->getTree(&trajectories_to_vis); // TODO: (michbaum) It's possible that we need to transform in this callback? Or possibly only after we choose a candidate
+  current_segment_->getTree(&trajectories_to_vis); 
   trajectories_to_vis.erase(
       trajectories_to_vis.begin());  // remove current segment (root)
   if (p_visualize_) {
@@ -308,12 +358,29 @@ bool OnlinePlanner::requestNextTrajectory() {
 
   // Move
   EigenTrajectoryPointVector trajectory;
+  // Just extracts the trajectory of the current segment
   trajectory_generator_->extractTrajectoryToPublish(&trajectory,
                                                     *current_segment_);
   current_segment_->trajectory = trajectory;
 
-  // TODO: (michbaum) Check this function
-  requestMovement(trajectory);
+  //--------------------------------------------------------------------------------------------------------
+  // For us the tree needs to be updated before we follow the next trajectory in line, otherwise we can't
+  // estimate the drift of the reached position anymore
+  // if (p_verbose_) {
+  //   std::stringstream ss;
+  //   ss << "Reevaluating cost of current segment based on drift!\n";
+  //   printInfo(ss.str());
+  // }
+  // // This should update the current segment with the drift estimation
+  // trajectory_evaluator_->updateSegment(current_segment_.get());
+  // // This should propagate the cost to all children
+  // updateEvaluatorStep(current_segment_.get());
+  // if (p_log_performance_) {
+  //   perf_upte = static_cast<double>(std::clock() - timer) / CLOCKS_PER_SEC;
+  // }
+  //---------------------------------------------------------------------------------------------------------
+
+  requestMovement(trajectory); // Maybe need to update the tree before this! This publishes the trajectory!
   target_position_ = trajectory.back().position_W;
   target_yaw_ = trajectory.back().getYaw();
   back_tracker_->segmentIsExecuted(*current_segment_);
@@ -331,6 +398,7 @@ bool OnlinePlanner::requestNextTrajectory() {
     timer = std::clock();
   }
 
+  // TODO: Might have to do the update before the trajectory 
   // Update tree
   // recursive tree pass from root to leaves
   updateGeneratorStep(current_segment_.get());
@@ -412,6 +480,7 @@ void OnlinePlanner::expandTrajectories() {
     new_segments_++;
   }
 
+
   // TODO: (michbaum) here the gain & costs gets called
   // Evaluate newly added segments: Gain
   for (int i = 0; i < created_segments.size(); ++i) {
@@ -441,6 +510,80 @@ void OnlinePlanner::expandTrajectories() {
     perf_log_data_[4] +=
         static_cast<double>(std::clock() - timer) / CLOCKS_PER_SEC;
   }
+}
+
+void OnlinePlanner::logRelativeErrorToCsv(){
+  // We log the relative pose error translation and orientation to a csv file for processing
+  // This only gets called when the end of a trajectory segment is reached and should be a gaige of
+  // the accumulated drift during a planner run. 
+  // Ideally, this drift should go down with our policy
+
+  // Extract the current ground truth pose
+  std::tuple<Eigen::Vector3d, Eigen::Quaterniond> gt_pose = getPose(world_frame_, gt_frame_);
+  Eigen::Vector3d gt_position = std::get<0>(gt_pose);
+  Eigen::Quaterniond gt_orientation = std::get<1>(gt_pose);
+
+  std::tuple<Eigen::Vector3d, Eigen::Quaterniond> drifty_pose = getPose(world_frame_, drifty_frame_);
+  Eigen::Vector3d current_position = std::get<0>(drifty_pose);
+  Eigen::Quaterniond current_orientation = std::get<1>(drifty_pose);
+
+
+  // Convert absolute poses to Eigen::Isometry3d
+  Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
+  pose1.translation() = current_position;
+  pose1.linear() = current_orientation.toRotationMatrix();
+
+  Eigen::Isometry3d pose2 = Eigen::Isometry3d::Identity();
+  pose2.translation() = gt_position;
+  pose2.linear() = gt_orientation.toRotationMatrix();
+
+  // Calculate the relative pose
+  Eigen::Isometry3d relativePose = pose1.inverse() * pose2;
+
+  // Extract relative position and orientation
+  Eigen::Vector3d relativePosition = relativePose.translation();
+  Eigen::AngleAxisd rotation_angle_axis(relativePose.rotation());
+  // Eigen::Vector3d relativePosition = gt_position - current_position;
+  Eigen::Quaterniond relativeOrientation(relativePose.linear());
+
+  // Extract euclidean distance between the positions and the angle between the orientations
+  double translationError = relativePosition.norm();
+  double angleError = rotation_angle_axis.angle();
+
+  // Write it to the csv file
+  // Log the relative pose to CSV file
+  ROS_INFO("Writing to log file!");
+  drift_log_file_ << timestamp_.toSec() << ","
+                  << relativePosition.x() << "," << relativePosition.y() << "," << relativePosition.z() << ","
+                  << relativeOrientation.w() << "," << relativeOrientation.x() << "," << relativeOrientation.y() << "," << relativeOrientation.z() << ","
+                  << translationError << "," << angleError << "\n";
+  drift_log_file_.flush();
+}
+
+std::tuple<Eigen::Vector3d, Eigen::Quaterniond> OnlinePlanner::getPose(std::string source_frame, std::string target_frame){
+  // Extract the transform from /world to the /base_link of the robot at the
+  // timestamp when the trajectory was completed
+  try
+    {
+      // Lookup the transform at the time of the pose message
+      geometry_msgs::TransformStamped gt_transform = tf_buffer_.lookupTransform(target_frame, source_frame, timestamp_, ros::Duration(1.0));
+
+      // Translate transform into Pose
+      Eigen::Vector3d gt_position = transformToEigenPosition(gt_transform);
+      Eigen::Quaterniond gt_orientation = transformToEigenQuaternion(gt_transform);
+      return {gt_position, gt_orientation};
+
+    }
+  catch (tf2::TransformException& ex)
+    {
+      ROS_WARN("%s", ex.what());
+      // Mark this pose as invalid, will not write the error down
+      return {Eigen::Vector3d (NULL, NULL, NULL), Eigen::Quaterniond (NULL, NULL, NULL, NULL)};
+    }
+}
+
+void OnlinePlanner::setTimestamp(const ::ros::Time timestamp) {
+  timestamp_ = timestamp;
 }
 
 void OnlinePlanner::publishTrajectoryVisualization(
