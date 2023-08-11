@@ -4,9 +4,9 @@
 source /home/michbaum/Projects/maplab/devel/setup.bash
 
 # Define the path to the directory containing your rosbag files
-rosbag_example_config="/home/michbaum/Projects/optag/data/sim_bags/maze_slowdown_drifty_example_config.bag"
-rosbag_exploration_planner="/home/michbaum/Projects/optag/data/sim_bags/maze_slowdown_drifty_exploration_planner.bag"
-rosbag_reconstruction_planner="/home/michbaum/Projects/optag/data/sim_bags/maze_slowdown_drifty_reconstruction_planner.bag"
+rosbag_example_config="/home/michbaum/Projects/optag/data/sim_bags/maze_slowdown_drifty_example_config.bag" # This should be the SECOND sim bag
+rosbag_exploration_planner="/home/michbaum/Projects/optag/data/sim_bags/maze_slowdown_drifty_exploration_planner.bag" # This should be the FIRST sim bag
+# rosbag_reconstruction_planner="/home/michbaum/Projects/optag/data/sim_bags/maze_slowdown_drifty_reconstruction_planner.bag"
 
 # Define the package containing your launch file
 package="maplab_node"
@@ -92,38 +92,38 @@ sleep 10
 
 #-----------------------------------------------------------------------
 
-echo "Playing rosbag: $rosbag_reconstruction_planner"
+# echo "Playing rosbag: $rosbag_reconstruction_planner"
         
-# Start the launch file in the background
-roslaunch "$package" "$launch_file" &
-launch_pid=$!
+# # Start the launch file in the background
+# roslaunch "$package" "$launch_file" &
+# launch_pid=$!
 
-sleep 7
+# sleep 7
 
-# Start playing the rosbag
-rosbag play "$rosbag_reconstruction_planner" -u 920
+# # Start playing the rosbag
+# rosbag play "$rosbag_reconstruction_planner" -u 920
 
-# Stop the launch file
-kill -INT $launch_pid
-wait $launch_pid
+# # Stop the launch file
+# kill -INT $launch_pid
+# wait $launch_pid
 
-sleep 10
+# sleep 10
 
-#-----------------------------------------------------------------------
+# #-----------------------------------------------------------------------
 
-echo "Playing rosbag: $rosbag_reconstruction_planner"
+# echo "Playing rosbag: $rosbag_reconstruction_planner"
         
-# Start the launch file in the background
-roslaunch "$package" "$launch_file" &
-launch_pid=$!
+# # Start the launch file in the background
+# roslaunch "$package" "$launch_file" &
+# launch_pid=$!
 
-sleep 7
+# sleep 7
 
-# Start playing the rosbag
-rosbag play "$rosbag_reconstruction_planner" -s 880
+# # Start playing the rosbag
+# rosbag play "$rosbag_reconstruction_planner" -s 880
 
-# Stop the launch file
-kill -INT $launch_pid
-wait $launch_pid
+# # Stop the launch file
+# kill -INT $launch_pid
+# wait $launch_pid
 
-sleep 10
+# sleep 10

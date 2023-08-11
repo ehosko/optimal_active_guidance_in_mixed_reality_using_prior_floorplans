@@ -34,8 +34,8 @@
   <arg name="visualize" default="true"/>
   
   <!--  Experiment arguments --> 
-  <arg name="experiment_config" default="Warehouse.yaml"/>
-  <!-- <arg name="experiment_config" default="Maze.yaml"/> -->
+  <!-- <arg name="experiment_config" default="Warehouse.yaml"/> -->
+  <arg name="experiment_config" default="Maze.yaml"/>
   <arg name="record_data" default="true"/>
   <arg name="record_visualization" default="true"/>
   <arg name="data_directory" default="/home/michbaum/Projects/optag/data"/> 
