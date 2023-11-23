@@ -29,22 +29,24 @@
   
   <!--  Planner arguments (can use a single config or compose the planner)-->
   <arg name="use_separate_configs" default="false"/>
-  <arg name="planner_config" default="planners/drift_aware_planner.yaml"/>
+  <arg name="planner_config" default="planners/example_config.yaml"/>
   <arg name="verbose_planner" default="true"/>
   <arg name="visualize" default="true"/>
   
   <!--  Experiment arguments --> 
-  <arg name="experiment_config" default="Warehouse.yaml"/>
-  <!-- <arg name="experiment_config" default="Maze.yaml"/> -->
+  <!-- <arg name="experiment_config" default="Warehouse.yaml"/> -->
+  <arg name="experiment_config" default="Maze.yaml"/>
   <arg name="record_data" default="true"/>
   <arg name="record_visualization" default="true"/>
-  <arg name="data_directory" default="/home/michbaum/Projects/optag/data"/> 
+  <!-- <arg name="data_directory" default="/home/michbaum/Projects/optag/data"/>  -->
+  <arg name="data_directory" default="/home/michbaum/Projects/optag_EH/data"/> 
   <!-- Frequency in seconds when the current map state should be saved to disk -->
   <arg name="data_frequency" default="30.0" />
   <arg name="time_limit" default="30" /> <!-- in minutes, full map takes ~30min, due to sim_time_factor set to 6h -->
   <!-- If we use a simulation to gather data or a real device (not implemented yet) -->
   <arg name="use_sim" default="true" /> 
-  <arg name="output_file" default="warehouse_drift_evaluation_reconstruction_planner.csv" />
+  <!-- <arg name="output_file" default="warehouse_drift_evaluation_reconstruction_planner.csv" /> -->
+  <arg name="output_file" default="maze_drift_evaluation_example_config.csv" />
 
   <!-- *** Experiment Execution *** -->
   
@@ -253,7 +255,7 @@
       <param name="visualize" value="$(arg visualize)" />
       <param name="log_performance" value="$(arg record_data)" />
       <param name="log_drift_performance" value="true" /> <!-- Whether to log drift estimation to a csv file -->
-      <param name="drift_log_dir" value="/home/michbaum/Projects/optag/data/drift_logs/" />
+      <param name="drift_log_dir" value="/home/michbaum/Projects/optag_EH/data/drift_logs/" />
       <!-- TODO: CHANGE -->
       <param name="drift_log_file" value="$(arg output_file)" />
       <!-- Frames to utilize to extract the current gt pose of the agent in the simulation -->
