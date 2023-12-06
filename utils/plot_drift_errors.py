@@ -21,6 +21,9 @@ def plot_translation_error(csv_file):
     plt.xlabel('Timestamp')
     plt.ylabel('Translation Error (meters)')
 
+    # Limit y-axis to 5
+    # plt.ylim(0, 5)
+
     # Rotate x-axis labels for better visibility
     plt.xticks(rotation=45)
 
@@ -49,7 +52,7 @@ def plot_angle_error(csv_file):
     # Rotate x-axis labels for better visibility
     plt.xticks(rotation=45)
 
-    # Display the plot
+    # Display the plot 
     plt.tight_layout()
     plt.show()
 

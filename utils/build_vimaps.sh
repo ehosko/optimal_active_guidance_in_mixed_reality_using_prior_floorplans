@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # activate the maplab ROS environment
-source /home/michbaum/Projects/maplab/devel/setup.bash
+# source /home/michbaum/Projects/maplab/devel/setup.bash # Workstation
+source /home/michbaum/maplab_ws/devel/setup.bash # Laptop
 
 # Define the path to the directory containing your rosbag files
-rosbag_dir="/home/michbaum/Projects/optag/data/sim_bags/warehouse_slowdown_gt_without_windows_split"
+rosbag_dir="/home/michbaum/optag_ws/data/sim_bags/warehouse_slowdown_gt_without_windows_split"
 
 # Define the package containing your launch file
 package="maplab_node"
@@ -30,6 +31,8 @@ for rosbag_file in "${rosbag_files[@]}"; do
         # Start the launch file in the background
         roslaunch "$package" "$launch_file" &
         launch_pid=$!
+
+        sleep 7
         
         # Start playing the rosbag
         rosbag play "$rosbag_file"
