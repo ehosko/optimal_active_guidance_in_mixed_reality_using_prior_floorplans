@@ -30,6 +30,12 @@ OnlinePlanner::~OnlinePlanner() {
   if (drift_log_file_.is_open()) {
     drift_log_file_.close();
   }
+  if (absPoseGt_log_file_.is_open()) {
+    absPoseGt_log_file_.close();
+  }
+  if (absPoseDrifty_log_file_.is_open()) {
+    absPoseDrifty_log_file_.close();
+  }
 }
 
 Eigen::Vector3d transformToEigenPosition(const geometry_msgs::TransformStamped& transformStamped)
@@ -130,6 +136,7 @@ void OnlinePlanner::setupFromParamMap(Module::ParamMap* param_map) {
 
   // Setup drift estimation
   if (p_drift_performance_) {
+    // Logging relative errors to csv file
     std::string log_dir("");
     std::string log_file("");
     setParam<std::string>(param_map, "drift_log_dir", &log_dir, "");
@@ -144,6 +151,33 @@ void OnlinePlanner::setupFromParamMap(Module::ParamMap* param_map) {
     
     drift_log_file_ << "Timestamp,RelativePoseX,RelativePoseY,RelativePoseZ,RelativeOrientW,RelativeOrientX,RelativeOrientY,RelativeOrientZ,TranslationError,AngleError\n";
     drift_log_file_.flush();
+
+    // Logging absolute pose estimates to txt file
+    std::string gt_log_file_txt("");
+    setParam<std::string>(param_map, "absPoseGt_log_file", &gt_log_file_txt, "GIVE_ME_A_NAME.txt");
+    absPoseGtlogfile_ = log_dir + gt_log_file_txt;
+    absPoseGt_log_file_.open(absPoseGtlogfile_.c_str());
+
+    ROS_INFO("Opening log file: %s", absPoseGtlogfile_.c_str());
+
+    if (!absPoseGt_log_file_.is_open())
+      {
+        ROS_ERROR("Failed to open log file: %s", absPoseGtlogfile_.c_str());
+        ros::shutdown();
+      }
+
+    std::string drifty_log_file_txt("");
+    setParam<std::string>(param_map, "absPoseDrifty_log_file", &drifty_log_file_txt, "GIVE_ME_A_NAME.txt");
+    absPoseDriftylogfile_ = log_dir + drifty_log_file_txt;
+    absPoseDrifty_log_file_.open(absPoseDriftylogfile_.c_str());
+
+    ROS_INFO("Opening log file: %s", absPoseDriftylogfile_.c_str());
+
+    if (!absPoseDrifty_log_file_.is_open())
+      {
+        ROS_ERROR("Failed to open log file: %s", absPoseDriftylogfile_.c_str());
+        ros::shutdown();
+      }
   }
 
   // Force lazy initialization of modules (call every function once)
@@ -552,12 +586,23 @@ void OnlinePlanner::logRelativeErrorToCsv(){
 
   // Write it to the csv file
   // Log the relative pose to CSV file
-  ROS_INFO("Writing to log file!");
+  ROS_INFO("Writing to log files!");
   drift_log_file_ << timestamp_.toSec() << ","
                   << relativePosition.x() << "," << relativePosition.y() << "," << relativePosition.z() << ","
                   << relativeOrientation.w() << "," << relativeOrientation.x() << "," << relativeOrientation.y() << "," << relativeOrientation.z() << ","
                   << translationError << "," << angleError << "\n";
   drift_log_file_.flush();
+
+  // Log the absolute pose to txt file
+  absPoseGt_log_file_ << timestamp_.toSec() << "\t"
+                  << gt_position.x() << "\t" << gt_position.y() << "\t" << gt_position.z() << "\t"
+                  << gt_orientation.x() << "\t" << gt_orientation.y() << "\t" << gt_orientation.z() << "\t" << gt_orientation.w() << "\n";
+  absPoseGt_log_file_.flush();
+
+  absPoseDrifty_log_file_ << timestamp_.toSec() << "\t"
+                  << current_position.x() << "\t" << current_position.y() << "\t" << current_position.z() << "\t"
+                  << current_orientation.x() << "\t" << current_orientation.y() << "\t" << current_orientation.z() << "\t" << current_orientation.w() << "\n";
+  absPoseDrifty_log_file_.flush();
 }
 
 std::tuple<Eigen::Vector3d, Eigen::Quaterniond> OnlinePlanner::getPose(std::string source_frame, std::string target_frame){

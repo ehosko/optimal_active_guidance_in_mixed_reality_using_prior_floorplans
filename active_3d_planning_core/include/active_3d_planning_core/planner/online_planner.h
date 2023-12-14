@@ -146,6 +146,10 @@ class OnlinePlanner : public PlannerI, public ModuleBase {
   tf2_ros::TransformListener tf_listener_;
   std::string driftlogfile_;
   std::ofstream drift_log_file_;
+  std::string absPoseGtlogfile_;
+  std::ofstream absPoseGt_log_file_;
+  std::string absPoseDriftylogfile_;
+  std::ofstream absPoseDrifty_log_file_;
   std::string world_frame_;
   std::string gt_frame_;
   std::string drifty_frame_;

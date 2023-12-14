@@ -34,8 +34,8 @@
   <arg name="visualize" default="true"/>
   
   <!--  Experiment arguments --> 
-  <arg name="experiment_config" default="Warehouse.yaml"/>
-  <!-- <arg name="experiment_config" default="Maze.yaml"/> -->
+  <!-- <arg name="experiment_config" default="Warehouse.yaml"/> -->
+  <arg name="experiment_config" default="Maze.yaml"/>
   <arg name="record_data" default="true"/>
   <arg name="record_visualization" default="true"/>
   <!-- <arg name="data_directory" default="/home/michbaum/Projects/optag/data"/>  -->
@@ -46,8 +46,10 @@
   <!-- If we use a simulation to gather data or a real device (not implemented yet) -->
   <arg name="use_sim" default="true" /> 
   <!-- <arg name="output_file" default="warehouse_drift_evaluation_reconstruction_planner.csv" /> -->
-  <arg name="output_file" default="maze_drift_evaluation_example_config.csv" />
-
+  <arg name="output_folder" default="/home/michbaum/Projects/optag_EH/data/drift_logs/maze_drift_evaluation_example_config/" />
+  <arg name="relativePose_output_file" default="relative_pose_error.csv" />
+  <arg name="absolutePoseGt_output_file" default="stamped_groundtruth.txt" />
+  <arg name="absolutePoseDrifty_output_file" default="stamped_traj_estimate.txt" />
   <!-- *** Experiment Execution *** -->
   
   <!-- Setup experiment params, data, nodes -->
@@ -255,9 +257,11 @@
       <param name="visualize" value="$(arg visualize)" />
       <param name="log_performance" value="$(arg record_data)" />
       <param name="log_drift_performance" value="true" /> <!-- Whether to log drift estimation to a csv file -->
-      <param name="drift_log_dir" value="/home/michbaum/Projects/optag_EH/data/drift_logs/" />
+      <param name="drift_log_dir" value="$(arg output_folder)" />
       <!-- TODO: CHANGE -->
-      <param name="drift_log_file" value="$(arg output_file)" />
+      <param name="drift_log_file" value="$(arg relativePose_output_file)" />
+      <param name="absPoseGt_log_file" value="$(arg absolutePoseGt_output_file)" />
+      <param name="absPoseDrifty_log_file" value="$(arg absolutePoseDrifty_output_file)" />
       <!-- Frames to utilize to extract the current gt pose of the agent in the simulation -->
       <param name="world_frame" value="world" />
       <param name="ground_truth_frame" value="firefly/base_link" />

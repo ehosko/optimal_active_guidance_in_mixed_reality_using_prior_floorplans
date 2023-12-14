@@ -3,8 +3,12 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Load the CSV file into a pandas DataFrame
-csv_file = '/home/michbaum/optag_ws/data/vi_map_evaluation/maze_local_planner.csv'  # Replace with your CSV file path
-data = pd.read_csv(csv_file)
+#csv_file = '/home/michbaum/optag_ws/data/vi_map_evaluation/maze_local_planner.csv'  # Replace with your CSV file path
+csv_file = '/home/michbaum/Projects/maplab/maze_qurey_maps_short_relax.csv'
+#csv_file = '/home/michbaum/Projects/maplab/warehouse_query_maps.csv'
+column_names = ['mission_id', 'vertex_id', 'vertex_number', 'position_x', 'position_y', 'position_z']
+
+data = pd.read_csv(csv_file,header=None, names=column_names)
 
 # Group the DataFrame by mission_id
 grouped = data.groupby('mission_id')
