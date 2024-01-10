@@ -42,7 +42,7 @@
   <arg name="data_directory" default="/home/michbaum/Projects/optag_EH/data"/> 
   <!-- Frequency in seconds when the current map state should be saved to disk -->
   <arg name="data_frequency" default="30.0" />
-  <arg name="time_limit" default="30" /> <!-- in minutes, full map takes ~30min, due to sim_time_factor set to 6h -->
+  <arg name="time_limit" default="5" /> <!-- in minutes, full map takes ~30min, due to sim_time_factor set to 6h -->
   <!-- If we use a simulation to gather data or a real device (not implemented yet) -->
   <arg name="use_sim" default="true" /> 
   <!-- <arg name="output_file" default="warehouse_drift_evaluation_reconstruction_planner.csv" /> -->
@@ -174,6 +174,8 @@
       <remap from="isaac_out_in" to="isaac_sensor_model/isaac_sensor_out" />
       <remap from="isaac_simulation_ready" to="simulation_manager/simulation_ready" />
       <remap from="collision" to="isaac_ros_client/collision" />
+      <remap from="odometry" to="/rovioli/odom_T_M_I" />
+      <remap from="ground_truth_odometry" to="/$(arg mav_name)/ground_truth/odometry" />
       <param name="ns_planner" value="/planner/planner_node" />
       <param name="ns_voxblox" value="/planner/voxblox_node" />
       <param name="delay" value="$(arg delay)" />
@@ -183,6 +185,7 @@
       <param name="eval_frequency" value="$(arg data_frequency)" />
       <param name="time_limit" value="$(arg time_limit)" /> <!-- in minutes -->
     </node>
+
 
     <!-- static camera transform for the simulation (Isaac has a different convention than ROS!) -->
     <!-- static_transform_publisher x y z qx qy qz qw frame_id child_frame_id  period_in_ms -->

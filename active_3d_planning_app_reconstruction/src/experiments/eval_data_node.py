@@ -11,10 +11,12 @@ import subprocess
 
 # ros
 import rospy
+import message_filters
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import String
 from std_srvs.srv import SetBool
 from voxblox_msgs.srv import FilePath
+from nav_msgs.msg import Odometry
 
 
 class EvalData(object):
@@ -84,6 +86,24 @@ class EvalData(object):
             self.eval_log_file = open(
                 os.path.join(self.eval_directory, "data_log.txt"), 'a')
 
+            self.gt_data_file = open(os.path.join(self.eval_directory,"groundtruth.csv"), 'wb')
+            self.gt_writer = csv.writer(self.gt_data_file,
+                                          delimiter=',',
+                                          quotechar='|',
+                                          quoting=csv.QUOTE_MINIMAL,
+                                          lineterminator='\n')
+            self.gt_writer.writerow(['Time', 'xPosition', 'yPosition', 'zPosition',
+                                      'xOrientation', 'yOrientation', 'zOrientation', 'wOrientation'])
+                    
+            self.drifty_data_file = open(os.path.join(self.eval_directory,"traj_estimate.csv"), 'wb')
+            self.drifty_writer = csv.writer(self.drifty_data_file,
+                                          delimiter=',',
+                                          quotechar='|',
+                                          quoting=csv.QUOTE_MINIMAL,
+                                          lineterminator='\n')
+            self.drifty_writer.writerow(['Time', 'xPosition', 'yPosition', 'zPosition',
+                                      'xOrientation', 'yOrientation', 'zOrientation', 'wOrientation'])
+
             # Subscribers, Services
             self.isaac_out_sub = rospy.Subscriber("isaac_out_in",
                                                PointCloud2,
@@ -95,6 +115,16 @@ class EvalData(object):
                                                   queue_size=10)
             self.cpu_time_srv = rospy.ServiceProxy(
                 self.ns_planner + "/get_cpu_time", SetBool)
+            
+            self.gt_sub = rospy.Subscriber('ground_truth_odometry', Odometry,self.gt_odom_callback,
+                                                  queue_size=10)
+            self.drifty_sub = rospy.Subscriber('odometry', Odometry,self.drifty_odom_callback,
+                                               queue_size=10)
+            # self.gt_sub = message_filters.Subscriber('ground_truth_odometry', Odometry)
+            # self.drifty_sub = message_filters.Subscriber('odometry', Odometry)
+
+            # self.ts = message_filters.ApproximateTimeSynchronizer([self.gt_sub, self.drifty_sub], 20, 0.1, allow_headerless=True)
+            # self.ts.registerCallback(self.odom_callback)
 
             # Finish
             self.writelog("Data folder created at '%s'." % self.eval_directory)
@@ -221,6 +251,8 @@ class EvalData(object):
 
     def eval_finish(self):
         self.eval_data_file.close()
+        self.gt_data_file.close()
+        self.drifty_data_file.close()
         map_path = os.path.join(self.eval_directory, "voxblox_maps")
         n_maps = len([
             f for f in os.listdir(map_path)
@@ -268,7 +300,29 @@ class EvalData(object):
             self.collided = True
             self.stop_experiment("Collision detected!")
 
+    def gt_odom_callback(self, msg):
 
+        self.gt_position = msg.pose.pose.position
+        self.gt_orientation = msg.pose.pose.orientation
+
+        # self.gt_writer.writerow([rospy.get_time(),
+        #                         msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z,
+        #                         msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+    
+    def drifty_odom_callback(self, msg):
+
+        self.drifty_writer.writerow([rospy.get_time(),
+                                msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z,
+                                msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+        
+        self.gt_writer.writerow([rospy.get_time(),
+                                self.gt_position.x, self.gt_position.y, self.gt_position.z,
+                                self.gt_orientation.x, self.gt_orientation.y, self.gt_orientation.z, self.gt_orientation.w])
+        
+    def odom_callback(self):
+         self.drifty_writer.writerow([rospy.get_time(), 1, 1, 1,
+                                     2, 2, 2, 2])
+         
 if __name__ == '__main__':
     rospy.init_node('eval_data_node', anonymous=True)
     ed = EvalData()
