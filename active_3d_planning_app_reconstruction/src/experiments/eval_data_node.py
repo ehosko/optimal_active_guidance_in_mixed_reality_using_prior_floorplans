@@ -8,6 +8,7 @@ import datetime
 import os
 import re
 import subprocess
+import numpy as np
 
 # ros
 import rospy
@@ -18,6 +19,9 @@ from std_srvs.srv import SetBool
 from voxblox_msgs.srv import FilePath
 from nav_msgs.msg import Odometry
 
+import tf2_ros
+from geometry_msgs.msg import TransformStamped
+# from ros_numpy import numpify
 
 class EvalData(object):
     def __init__(self):
@@ -86,6 +90,12 @@ class EvalData(object):
             self.eval_log_file = open(
                 os.path.join(self.eval_directory, "data_log.txt"), 'a')
 
+
+            # # Buffer
+            self.tf_buffer = tf2_ros.Buffer()
+            self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+
+
             self.gt_data_file = open(os.path.join(self.eval_directory,"groundtruth.csv"), 'wb')
             self.gt_writer = csv.writer(self.gt_data_file,
                                           delimiter=',',
@@ -133,6 +143,8 @@ class EvalData(object):
                 self.ns_voxblox + "/save_map", FilePath)
             rospy.on_shutdown(self.eval_finish)
             self.collided = False
+
+        
 
         self.launch_simulation()
 
@@ -302,8 +314,8 @@ class EvalData(object):
 
     def gt_odom_callback(self, msg):
 
-        self.gt_position = msg.pose.pose.position
-        self.gt_orientation = msg.pose.pose.orientation
+        self.gt_position = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z])
+        self.gt_orientation = np.array([msg.pose.pose.orientation.w,msg.pose.pose.orientation,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z])
 
         # self.gt_writer.writerow([rospy.get_time(),
         #                         msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z,
@@ -311,13 +323,61 @@ class EvalData(object):
     
     def drifty_odom_callback(self, msg):
 
-        self.drifty_writer.writerow([rospy.get_time(),
+        # TODO: (ehosko) Fix correct time, and should get drifty frame also via transform?
+        gt_position_app = np.transpose((np.append(self.gt_position, 1)))
+        gt_rotation = (self.gt_orientation).copy()
+
+        # rospy.loginfo("\n" + "*" * 5 +
+        #               str(np.shape(gt_position_app)) + "*" * 5)
+
+
+        time = rospy.get_time()
+        self.drifty_writer.writerow([time,
                                 msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z,
                                 msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
         
-        self.gt_writer.writerow([rospy.get_time(),
-                                self.gt_position.x, self.gt_position.y, self.gt_position.z,
-                                self.gt_orientation.x, self.gt_orientation.y, self.gt_orientation.z, self.gt_orientation.w])
+        # self.gt_writer.writerow([rospy.get_time(),
+        #                         self.gt_position.x, self.gt_position.y, self.gt_position.z,
+        #                         self.gt_orientation.x, self.gt_orientation.y, self.gt_orientation.z, self.gt_orientation.w])
+
+        try:
+            transform = self.tf_buffer.lookup_transform("rovioli/imu", "firefly/base_link", rospy.Time(), rospy.Duration(0.5))
+            
+            # Transform into numpy array
+            q = np.array([transform.transform.rotation.w,transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z])
+            t = np.array([transform.transform.translation.x, transform.transform.translation.y, transform.transform.translation.z])
+
+            q0, q1, q2, q3 = q[0],q[1],q[2],q[3]
+            rotation_matrix = np.array([
+            [1 - 2*q2**2 - 2*q3**2, 2*q1*q2 - 2*q0*q3, 2*q1*q3 + 2*q0*q2],
+            [2*q1*q2 + 2*q0*q3, 1 - 2*q1**2 - 2*q3**2, 2*q2*q3 - 2*q0*q1],
+            [2*q1*q3 - 2*q0*q2, 2*q2*q3 + 2*q0*q1, 1 - 2*q1**2 - 2*q2**2]
+            ])
+
+            transformation_matrix = np.eye(4)
+            transformation_matrix[:3, :3] = rotation_matrix
+            transformation_matrix[:3, 3] = t
+
+            # Extract the result as a 3D numpy array
+            
+            pos_result = np.matmul(transformation_matrix,gt_position_app)
+            
+            #rot_result = q * gt_rotation
+            rot_result = q.copy()
+
+            # self.gt_writer.writerow([time,
+            #                         transform.transform.translation.x, transform.transform.translation.y, transform.transform.translation.z,
+            #                         transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z, transform.transform.rotation.w])
+            self.gt_writer.writerow([time,
+                                    pos_result[0], pos_result[1], pos_result[2],
+                                    rot_result[1], rot_result[2], rot_result[3], rot_result[0]])
+        
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            self.gt_writer.writerow([rospy.get_time(),
+                                    0, 0, 0,
+                                    0, 0, 0, 0])
+        
+        
         
     def odom_callback(self):
          self.drifty_writer.writerow([rospy.get_time(), 1, 1, 1,
