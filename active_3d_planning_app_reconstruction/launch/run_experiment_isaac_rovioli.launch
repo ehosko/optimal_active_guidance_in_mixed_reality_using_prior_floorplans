@@ -42,7 +42,7 @@
   <arg name="data_directory" default="/home/michbaum/Projects/optag_EH/data"/> 
   <!-- Frequency in seconds when the current map state should be saved to disk -->
   <arg name="data_frequency" default="30.0" />
-  <arg name="time_limit" default="20" /> <!-- in minutes, full map takes ~30min, due to sim_time_factor set to 6h -->
+  <arg name="time_limit" default="3" /> <!-- in minutes, full map takes ~30min, due to sim_time_factor set to 6h -->
   <!-- If we use a simulation to gather data or a real device (not implemented yet) -->
   <arg name="use_sim" default="true" /> 
   <!-- <arg name="output_file" default="warehouse_drift_evaluation_reconstruction_planner.csv" /> -->
@@ -202,14 +202,14 @@
   </group>
 
   <node pkg="rosbag" type="record" name="rosbag_vis_recorder"
-      args="record -o $(arg data_directory)/sim_bags/sim_bags /cam0/image_raw
-                                                              /imu0/ground_truth
-                                                              /imu0
+      args="record -o $(arg data_directory)/sim_bags/sim_bags /isaac/isaac_ros_client/isaac_gray_image_out
+                                                              /firefly/ground_truth/imu
+                                                              /firefly/imu
                                                               /firefly/ground_truth/position" 
       if="$(eval arg('record_data') and arg('record_visualization'))">
-      <remap from="cam0/image_raw" to="/isaac/isaac_ros_client/isaac_gray_image_out" />
-      <remap from="imu0" to="/$(arg mav_name)/imu" />
-      <remap from="imu0/ground_truth" to="/$(arg mav_name)/ground_truth/imu" />
+      <!-- <remap from="cam0/image_raw" to="/isaac/isaac_ros_client/isaac_gray_image_out" /> -->
+      <!-- <remap from="imu0" to="/$(arg mav_name)/imu" /> -->
+      <!-- <remap from="imu0/ground_truth" to="/$(arg mav_name)/ground_truth/imu" /> -->
   </node>
 
   <group ns="planner">

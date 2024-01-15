@@ -5,7 +5,7 @@
 source /home/michbaum/maplab_ws/devel/setup.bash # Laptop
 
 # Define the path to the directory containing your rosbag files
-rosbag_dir="/home/michbaum/optag_ws/data/sim_bags/warehouse_slowdown_gt_without_windows_split"
+rosbag_dir="/home/michbaum/Projects/optag_EH/data/sim_bags/maze_slowdown_gt_split/"
 
 # Define the package containing your launch file
 package="maplab_node"
@@ -18,6 +18,8 @@ cd "$rosbag_dir"
 
 # Get a list of all rosbag files in the directory
 rosbag_files=(*.bag)
+
+echo "Found ${#rosbag_files[@]} rosbag files in $rosbag_dir"
 
 # Loop through each rosbag file
 for rosbag_file in "${rosbag_files[@]}"; do
@@ -35,7 +37,7 @@ for rosbag_file in "${rosbag_files[@]}"; do
         sleep 7
         
         # Start playing the rosbag
-        rosbag play "$rosbag_file"
+        rosbag play "$rosbag_file" /cam0/image_raw:=/isaac/isaac_ros_client/isaac_gray_image_out /imu0:=/firefly/imu
         
         # Stop the launch file
         kill -INT $launch_pid

@@ -7,7 +7,7 @@ source /home/michbaum/Projects/maplab/devel/setup.bash
 # rosbag_example_config="/home/michbaum/Projects/optag/data/sim_bags/maze_slowdown_drifty_example_config.bag" # This should be the SECOND sim bag
 #rosbag_exploration_planner="/home/michbaum/Projects/optag_EH/data/sim_bags/maze_slowdown_drifty_exploration_planner.bag" # This should be the FIRST sim bag
 # rosbag_reconstruction_planner="/home/michbaum/Projects/optag/data/sim_bags/maze_slowdown_drifty_reconstruction_planner.bag"
-rosbag_drift_aware_planner="/home/michbaum/Projects/optag_EH/data/sim_bags/warehouse_drifty_drift_aware_planner.bag"
+rosbag_drift_aware_planner="/home/michbaum/Projects/optag_EH/data/sim_bags/sensor_test2.bag"
 
 # Define the package containing your launch file
 package="maplab_node"
@@ -142,7 +142,7 @@ sleep 7
 
 # Start playing the rosbag
 # rosbag play "$rosbag_exploration_planner" -u 920
-rosbag play "$rosbag_drift_aware_planner" -u 920
+rosbag play "$rosbag_drift_aware_planner" -u 300 
 
 # Stop the launch file
 kill -INT $launch_pid

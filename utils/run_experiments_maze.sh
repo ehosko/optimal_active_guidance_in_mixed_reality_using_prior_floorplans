@@ -21,30 +21,33 @@ send_ctrl_c_to_window() {
 # terminator -T "rovioli" -e "bash -c 'source /home/michbaum/Projects/maplab/devel/setup.bash && 
 # roslaunch maplab_node optag-maplab-node-w-rovioli.launch; bash'" 
 
-# sleep 3660  # Wait an hour
+# # sleep 3660  # Wait an hour
+
+# sleep 2500 # Wait 40+ minutes
     
-# # # Send Ctrl+C command to the second Terminator tab by name
+# # # # Send Ctrl+C command to the second Terminator tab by name
 # send_ctrl_c_to_window "rovioli"
 
 # sleep 40
 
 
-# # Experiment 2
+# # # Experiment 2
 #  terminator -T "planner" -e "bash -c 'source /home/michbaum/Projects/optag_EH/devel/setup.bash && 
 #  roslaunch active_3d_planning_app_reconstruction run_experiment_isaac_rovioli.launch output_folder:="/home/michbaum/Projects/optag_EH/data/drift_logs/maze_drift_evaluation_exploration_config/" planner_config:="planners/exploration_planner.yaml"'" &
 #  sleep 7
 #  terminator -T "rovioli" -e "bash -c 'source /home/michbaum/Projects/maplab/devel/setup.bash && 
 #  roslaunch maplab_node optag-maplab-node-w-rovioli.launch; bash'" 
 
-# sleep 3660  # Wait an hour
-# #  # sleep 140 # Wait 2 minutes
+# # sleep 3660  # Wait an hour
+# # #  # sleep 140 # Wait 2 minutes
+# sleep 2500
 
-# #  # Send Ctrl+C command to the second Terminator tab by name
+# # #  # Send Ctrl+C command to the second Terminator tab by name
 # send_ctrl_c_to_window "rovioli"
 # sleep 40
 
 
-# # Experiment 3
+# # # Experiment 3
 # terminator -T "planner" -e "bash -c 'source /home/michbaum/Projects/optag_EH/devel/setup.bash && 
 # roslaunch active_3d_planning_app_reconstruction run_experiment_isaac_rovioli.launch output_folder:="/home/michbaum/Projects/optag_EH/data/drift_logs/maze_drift_evaluation_example_config/" planner_config:="planners/example_config.yaml"'" &
 # sleep 7
@@ -53,8 +56,9 @@ send_ctrl_c_to_window() {
 
 # sleep 3660  # Wait an hour
 # # sleep 140 # Wait 2 minutes
-    
-# # # Send Ctrl+C command to the second Terminator tab by name
+# sleep 2500
+
+# # # # Send Ctrl+C command to the second Terminator tab by name
 # send_ctrl_c_to_window "rovioli"
 
 # sleep 40
@@ -68,9 +72,9 @@ sleep 7
 terminator -T "rovioli" -e "bash -c 'source /home/michbaum/Projects/maplab/devel/setup.bash && 
 roslaunch maplab_node optag-maplab-node-w-rovioli.launch; bash'" 
 
-sleep 3660  # Wait an hour
+#sleep 3660  # Wait an hour
 #sleep 1880  # Wait half an hour
-#sleep 400 # Wait 6+ minutes
+sleep 400 # Wait 6+ minutes
    
 # Send Ctrl+C command to the second Terminator tab by name
 send_ctrl_c_to_window "rovioli"
