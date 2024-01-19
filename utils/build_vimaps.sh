@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # activate the maplab ROS environment
-# source /home/michbaum/Projects/maplab/devel/setup.bash # Workstation
-source /home/michbaum/maplab_ws/devel/setup.bash # Laptop
+source /home/michbaum/Projects/maplab/devel/setup.bash # Workstation
 
 # Define the path to the directory containing your rosbag files
 rosbag_dir="/home/michbaum/Projects/optag_EH/data/sim_bags/maze_slowdown_gt_split/"
