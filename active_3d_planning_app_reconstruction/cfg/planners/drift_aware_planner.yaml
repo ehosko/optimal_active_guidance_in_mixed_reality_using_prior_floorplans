@@ -92,12 +92,15 @@ trajectory_evaluator:
 
       cost_computer:
         type: "DriftEstimator" # This determines the cost formulation (currently just time needed to execute)
-        drift_weight: 1
+        drift_weight: 0.0
         orientation_error_weight: 10
         world_frame: "world"
         ground_truth_frame: "firefly/base_link"
+        floorplan_frame: "floorplan"
         drifty_frame: "rovioli/imu"
         drift_estimation_radius: 0.5
+        use_opt_traj : false
+        use_floorplan : false
 
       value_computer:
         type: "GlobalNormalizedGain" # This function just accumulates the value in the RRT Graph, probably shouldn't be touched

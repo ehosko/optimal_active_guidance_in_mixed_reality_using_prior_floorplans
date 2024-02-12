@@ -77,7 +77,7 @@ roslaunch maplab_node optag-maplab-node-w-rovioli.launch; bash'"
 sleep 400 # Wait 6+ minutes
    
 # Send Ctrl+C command to the second Terminator tab by name
-send_ctrl_c_to_window "rovioli"
+# send_ctrl_c_to_window "rovioli"
 
 sleep 40
 
@@ -88,8 +88,8 @@ sleep 40
 # terminator -T "rovioli" -e "bash -c 'source /home/michbaum/Projects/maplab/devel/setup.bash && 
 # roslaunch maplab_node optag-maplab-node-w-rovioli.launch; bash'" 
 
-# #sleep 3660  # Wait an hour
-# #sleep 1880  # Wait half an hour
+#sleep 3660  # Wait an hour
+#sleep 1880  # Wait half an hour
 # sleep 400 # Wait 6+ minutes
    
 # # Send Ctrl+C command to the second Terminator tab by name

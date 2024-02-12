@@ -23,7 +23,8 @@ class FloorplanDriftEstimator : public CostComputer {
 
   std::tuple<Eigen::Vector3d, Eigen::Quaterniond> getCurrentPose(const std::string source_frame, const std::string target_frame);
 
-  double computeDriftError(const Eigen::Vector3d gt_position, const Eigen::Vector3d current_position);
+  double computeDriftError(const Eigen::Vector3d gt_position, const Eigen::Vector3d current_position,
+                         const Eigen::Quaterniond gt_orientation, const Eigen::Quaterniond current_orientation);
 
  protected:
   static ModuleFactoryRegistry::Registration<FloorplanDriftEstimator> registration;

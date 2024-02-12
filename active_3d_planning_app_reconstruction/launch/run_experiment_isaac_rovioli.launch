@@ -32,6 +32,9 @@
   <arg name="planner_config" default="planners/example_config.yaml"/>
   <arg name="verbose_planner" default="true"/>
   <arg name="visualize" default="true"/>
+
+  <!--  Floorplan arguments -->
+  <arg name="use_opt_traj" default="false"/>
   
   <!--  Experiment arguments --> 
   <!-- <arg name="experiment_config" default="Warehouse.yaml"/> -->
@@ -176,14 +179,16 @@
       <remap from="collision" to="isaac_ros_client/collision" />
       <remap from="odometry" to="/rovioli/odom_T_M_I" />
       <remap from="ground_truth_odometry" to="/$(arg mav_name)/ground_truth/odometry" />
+      <remap from="optimal_trajectory_ready" to="/floorplan_node/opt_traj_ready"/>
       <param name="ns_planner" value="/planner/planner_node" />
       <param name="ns_voxblox" value="/planner/voxblox_node" />
       <param name="delay" value="$(arg delay)" />
-      <param name="startup_timeout" value="30.0" />
+      <!-- <param name="startup_timeout" value="30.0" /> -->
       <param name="evaluate" value="$(arg record_data)" />
       <param name="eval_directory" value="$(arg data_directory)" />
       <param name="eval_frequency" value="$(arg data_frequency)" />
       <param name="time_limit" value="$(arg time_limit)" /> <!-- in minutes -->
+      <param name="use_opt_traj" value = "$(arg use_opt_traj)" />
     </node>
 
 
@@ -269,13 +274,17 @@
       <param name="world_frame" value="world" />
       <param name="ground_truth_frame" value="firefly/base_link" />
       <param name="drifty_frame" value="rovioli/imu" />
-    
+      <param name="optimal_trajectory_frame" value="optimal_trajectory"/>
       <!-- Experiment dependent -->
       <param name="trajectory_evaluator/bounding_volume_args" value="/target_bounding_volume" />
       <param name="trajectory_generator/bounding_volume_args" value="/map_bounding_volume" />
       
       <!-- Modular Config -->    
       <rosparam command="load" file="$(find active_3d_planning_app_reconstruction)/cfg/$(arg planner_config)"/>
+
+      <!-- Floorplan Information -->
+      <param name="use_opt_traj" value="$(arg use_opt_traj)"/> 
+      <!-- TODO : add bool here that tells if rather should use gt or floorplan -->
     </node>    
 
     <!-- Trajectory transformer in case we use a simulation that operates in a "ground_truth" simulation frame -->
@@ -298,7 +307,7 @@
     <param name="floorplan_origin_y" value="0.0"/>
     <param name="floorplan_origin_z" value="0.0"/>
 
-    <param name="ray_length" value="5.0"/>
+    <param name="ray_length" value="$(arg ray_length)"/>
     <param name="sampling_time" value="0.0"/>
     <param name="focal_length" value="320.0"/>
     <param name="resolution_x" value="640"/>
@@ -313,15 +322,17 @@
     <param name="d_l" value="0.3"/>
     <param name="theta_l" value="0.26"/>
 
-    <param name="num_samples" value="50"/>
+    <param name="num_samples" value="500"/> <!-- 500 -->
     <param name="threshold" value="5"/>
     <param name="skip_distance" value="5"/>
+    <param name="lkh_executable" value="/home/michbaum/Projects/LKH/LKH-2.0.9/LKH"/>
 
-    <param name="log_file" value="/home/michbaum/Projects/optag_EH/data/floorplan/transformation.txt"/>
+    <param name="radius" value="1"/>
+
+    <param name="log_file" value="/home/michbaum/Projects/optag_EH/data/floorplan/pointCloudSamples.txt"/>
 
     <rosparam command="load" file="$(find active_3d_planning_app_reconstruction)/cfg/voxblox/transforms.yaml"/> 
-
-    <param name="concorde_executable" value="/home/michbaum/Projects/concorde/TSP/concorde"/>
+    <param name="path_log_file" value="/home/michbaum/Projects/optag_EH/data/floorplan/path.txt"/>
 
   </node>
 

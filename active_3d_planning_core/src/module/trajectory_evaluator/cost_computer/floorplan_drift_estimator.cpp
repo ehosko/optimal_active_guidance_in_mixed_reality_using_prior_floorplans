@@ -65,16 +65,16 @@ bool FloorplanDriftEstimator::computeCost(TrajectorySegment* traj_in) {
 
   ss << "Position difference of this trajectory segment's start and the current position is:\n"
      << position_difference_start << "\n"
-     << "Position difference of this trajectory segment's end and the current position is:\n"
+     << "Position difference of this trajectory segment's end and the current position is:\n" 
      << position_difference_end << "\n";
   std::cout << "Info: " << ss.str() << std::endl;
 
   // Extract the current ground truth pose
   std::tuple<Eigen::Vector3d, Eigen::Quaterniond> floorplan_pose = getCurrentPose(source_frame_, floorplan_frame_);
-  Eigen::Vector3d gt_position = std::get<0>(floorplan_pose);
-  //Eigen::Quaterniond gt_orientation = std::get<1>(gt_pose);
+  Eigen::Vector3d floorplan_position = std::get<0>(floorplan_pose);
+  Eigen::Quaterniond floorplan_orientation = std::get<1>(floorplan_pose);
 
-  double drift_cost = computeDriftError(gt_position, drifty_position);
+  double drift_cost = computeDriftError(floorplan_position, drifty_position, floorplan_orientation, drifty_orientation);
 
   traj_in->cost = segment_time_cost + drift_weight_ * drift_cost;
       
@@ -106,14 +106,31 @@ std::tuple<Eigen::Vector3d, Eigen::Quaterniond> FloorplanDriftEstimator::getCurr
     }
 }
 
-double FloorplanDriftEstimator::computeDriftError(const Eigen::Vector3d gt_position, const Eigen::Vector3d current_position) {
+double FloorplanDriftEstimator::computeDriftError(const Eigen::Vector3d gt_position, const Eigen::Vector3d current_position,
+                         const Eigen::Quaterniond gt_orientation, const Eigen::Quaterniond current_orientation) {
 
-  Eigen::Vector3d relativePosition = gt_position - current_position;
+  // Convert absolute poses to Eigen::Isometry3d
+  Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
+  pose1.translation() = current_position;
+  pose1.linear() = current_orientation.toRotationMatrix();
+
+  Eigen::Isometry3d pose2 = Eigen::Isometry3d::Identity();
+  pose2.translation() = gt_position;
+  pose2.linear() = gt_orientation.toRotationMatrix();
+
+  // Calculate the relative pose
+  Eigen::Isometry3d relativePose = pose1.inverse() * pose2;
+
+  // Extract relative position and orientation
+  Eigen::Vector3d relativePosition = relativePose.translation();
+  Eigen::Quaterniond relativeOrientation(relativePose.linear());
 
   // Extract euclidean distance between the positions and the angle between the orientations
   double translationError = relativePosition.norm();
+  Eigen::Vector3d euler = relativeOrientation.toRotationMatrix().eulerAngles(0, 1, 2);
+  double angleError = euler.norm(); // Angle is the magnitude of the Euler angles vector
 
-  return translationError;
+  return translationError + orientation_error_weight_ * angleError;
 }
 
 }  // namespace cost_computer
