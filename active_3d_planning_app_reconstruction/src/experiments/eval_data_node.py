@@ -47,11 +47,15 @@ class EvalData(object):
         
         self.use_opt_traj = rospy.get_param('~use_opt_traj',
                                                 "false")
+        
+        self.use_floorplan = rospy.get_param('~use_floorplan',
+                                                "false")
+        
+        self.output_dir = rospy.get_param('~output_folder',"/home/michbaum/Projects/optag_EH/data/drift_logs/")
 
         self.eval_walltime_0 = None
         self.eval_rostime_0 = None
 
-        
 
         if self.evaluate:
             # Setup parameters
@@ -102,7 +106,7 @@ class EvalData(object):
 
             # self.tf_buffer.lookup_transform("world", "world", rospy.Time(), rospy.Duration(0.5))
 
-            self.gt_data_file = open(os.path.join(self.eval_directory,"groundtruth.csv"), 'wb')
+            self.gt_data_file = open(os.path.join(self.output_dir,"groundtruth.csv"), 'wb')
             self.gt_writer = csv.writer(self.gt_data_file,
                                           delimiter=',',
                                           quotechar='|',
@@ -111,7 +115,7 @@ class EvalData(object):
             self.gt_writer.writerow(['Time', 'xPosition', 'yPosition', 'zPosition',
                                       'xOrientation', 'yOrientation', 'zOrientation', 'wOrientation'])
                     
-            self.drifty_data_file = open(os.path.join(self.eval_directory,"traj_estimate.csv"), 'wb')
+            self.drifty_data_file = open(os.path.join(self.output_dir,"traj_estimate.csv"), 'wb')
             self.drifty_writer = csv.writer(self.drifty_data_file,
                                           delimiter=',',
                                           quotechar='|',
@@ -121,24 +125,18 @@ class EvalData(object):
                                       'xOrientation', 'yOrientation', 'zOrientation', 'wOrientation'])
             
 
-            self.gt_data_file_world = open(os.path.join(self.eval_directory,"groundtruth_world.csv"), 'wb')
-            self.gt_writer_world = csv.writer(self.gt_data_file_world,
-                                          delimiter=',',
-                                          quotechar='|',
-                                          quoting=csv.QUOTE_MINIMAL,
-                                          lineterminator='\n')
-            self.gt_writer_world.writerow(['Time', 'xPosition', 'yPosition', 'zPosition',
-                                      'xOrientation', 'yOrientation', 'zOrientation', 'wOrientation'])
-            
-            self.drifty_data_file_world = open(os.path.join(self.eval_directory,"drifty_world.csv"), 'wb')
-            self.drifty_writer_world = csv.writer(self.drifty_data_file_world,
-                                          delimiter=',',
-                                          quotechar='|',
-                                          quoting=csv.QUOTE_MINIMAL,
-                                          lineterminator='\n')
-            self.drifty_writer_world.writerow(['Time', 'xPosition', 'yPosition', 'zPosition',
-                                      'xOrientation', 'yOrientation', 'zOrientation', 'wOrientation'])
+            if(self.use_floorplan):
+                
+                self.floorplan_data_file = open(os.path.join(self.output_dir,"floorplan_estimate.csv"), 'wb')
+                self.floorplan_writer = csv.writer(self.floorplan_data_file,
+                                            delimiter=',',
+                                            quotechar='|',
+                                            quoting=csv.QUOTE_MINIMAL,
+                                            lineterminator='\n')
+                self.floorplan_writer.writerow(['Time', 'xPosition', 'yPosition', 'zPosition',
+                                        'xOrientation', 'yOrientation', 'zOrientation', 'wOrientation'])
 
+           
             # Subscribers, Services
             self.isaac_out_sub = rospy.Subscriber("isaac_out_in",
                                                PointCloud2,
@@ -151,8 +149,8 @@ class EvalData(object):
             self.cpu_time_srv = rospy.ServiceProxy(
                 self.ns_planner + "/get_cpu_time", SetBool)
             
-            self.gt_sub = rospy.Subscriber('ground_truth_odometry', Odometry,self.gt_odom_callback,
-                                                  queue_size=10)
+            # self.gt_sub = rospy.Subscriber('ground_truth_odometry', Odometry,self.gt_odom_callback,
+            #                                       queue_size=10)
             self.drifty_sub = rospy.Subscriber('odometry', Odometry,self.drifty_odom_callback,
                                                queue_size=10)
             # self.gt_sub = message_filters.Subscriber('ground_truth_odometry', Odometry)
@@ -296,6 +294,9 @@ class EvalData(object):
         self.eval_data_file.close()
         self.gt_data_file.close()
         self.drifty_data_file.close()
+        if(self.use_floorplan):
+            self.floorplan_data_file.close()
+
         map_path = os.path.join(self.eval_directory, "voxblox_maps")
         n_maps = len([
             f for f in os.listdir(map_path)
@@ -343,84 +344,28 @@ class EvalData(object):
             self.collided = True
             self.stop_experiment("Collision detected!")
 
-    def gt_odom_callback(self, msg):
-
-        self.gt_position = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z])
-        self.gt_orientation = np.array([msg.pose.pose.orientation.w,msg.pose.pose.orientation,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z])
-
-        # self.gt_writer.writerow([rospy.get_time(),
-        #                         msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z,
-        #                         msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
     
     def drifty_odom_callback(self, msg):
 
-        # TODO: (ehosko) Clean up, only need the four lines at buttom
-
-        
-        gt_position_app = np.transpose((np.append(self.gt_position, 1)))
-        gt_rotation = (self.gt_orientation).copy()
-
-        # rospy.loginfo("\n" + "*" * 5 +
-        #               str(np.shape(gt_position_app)) + "*" * 5)
-
-
-        # time = rospy.get_time()
-        # self.drifty_writer.writerow([time,
-        #                         msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z,
-        #                         msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
-        
-        # self.gt_writer.writerow([rospy.get_time(),
-        #                         self.gt_position.x, self.gt_position.y, self.gt_position.z,
-        #                         self.gt_orientation.x, self.gt_orientation.y, self.gt_orientation.z, self.gt_orientation.w])
+        time = rospy.get_time()
 
         try:
-            print("Transform: ", self.tf_buffer.lookup_transform("world", "optimal_trajectory", rospy.Time(), rospy.Duration(0.5)))
-
-            transform = self.tf_buffer.lookup_transform("rovioli/imu", "firefly/base_link", rospy.Time(), rospy.Duration(0.5))
-            
-            # Transform into numpy array
-            q = np.array([transform.transform.rotation.w,transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z])
-            t = np.array([transform.transform.translation.x, transform.transform.translation.y, transform.transform.translation.z])
-
-            q0, q1, q2, q3 = q[0],q[1],q[2],q[3]
-            rotation_matrix = np.array([
-            [1 - 2*q2**2 - 2*q3**2, 2*q1*q2 - 2*q0*q3, 2*q1*q3 + 2*q0*q2],
-            [2*q1*q2 + 2*q0*q3, 1 - 2*q1**2 - 2*q3**2, 2*q2*q3 - 2*q0*q1],
-            [2*q1*q3 - 2*q0*q2, 2*q2*q3 + 2*q0*q1, 1 - 2*q1**2 - 2*q2**2]
-            ])
-
-            transformation_matrix = np.eye(4)
-            transformation_matrix[:3, :3] = rotation_matrix
-            transformation_matrix[:3, 3] = t
-
-            # Extract the result as a 3D numpy array
-            pos_result = np.matmul(transformation_matrix,gt_position_app)
-            
-            #rot_result = q * gt_rotation
-            rot_result = q.copy()
-
-            # self.gt_writer.writerow([time,
-            #                         transform.transform.translation.x, transform.transform.translation.y, transform.transform.translation.z,
-            #                         transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z, transform.transform.rotation.w])
-            # self.gt_writer.writerow([time,
-            #                         pos_result[0], pos_result[1], pos_result[2],
-            #                         rot_result[1], rot_result[2], rot_result[3], rot_result[0]])
-            
-
             transform_world_gt = self.tf_buffer.lookup_transform("world", "firefly/base_link", rospy.Time(), rospy.Duration(0.5))
             transform_world_drifty = self.tf_buffer.lookup_transform("world", "rovioli/imu", rospy.Time(), rospy.Duration(0.5))
+            
 
             self.gt_writer.writerow([time,transform_world_gt.transform.translation.x, transform_world_gt.transform.translation.y, transform_world_gt.transform.translation.z,
                                     transform_world_gt.transform.rotation.x, transform_world_gt.transform.rotation.y, transform_world_gt.transform.rotation.z, transform_world_gt.transform.rotation.w])
             self.drifty_writer.writerow([time,transform_world_drifty.transform.translation.x, transform_world_drifty.transform.translation.y, transform_world_drifty.transform.translation.z,
                                     transform_world_drifty.transform.rotation.x, transform_world_drifty.transform.rotation.y, transform_world_drifty.transform.rotation.z, transform_world_drifty.transform.rotation.w])
 
+            if(self.use_floorplan):
+                transform_world_floorplan = self.tf_buffer.lookup_transform("world", "floorplan", rospy.Time(), rospy.Duration(0.5))
+                self.floorplan_writer.writerow([time,transform_world_floorplan.transform.translation.x, transform_world_floorplan.transform.translation.y, transform_world_floorplan.transform.translation.z,
+                                    transform_world_floorplan.transform.rotation.x, transform_world_floorplan.transform.rotation.y, transform_world_floorplan.transform.rotation.z, transform_world_floorplan.transform.rotation.w])
         
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            self.gt_writer.writerow([rospy.get_time(),
-                                    0, 0, 0,
-                                    0, 0, 0, 0])
-            
+            pass
         
         
         

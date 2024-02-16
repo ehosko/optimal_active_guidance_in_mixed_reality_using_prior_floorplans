@@ -91,13 +91,17 @@ trajectory_evaluator:
         downsampling_factor: 5.0
 
       cost_computer:
-        type: "FloorplanDriftEstimator" # This determines the cost formulation (currently just time needed to execute)
-        drift_weight: 1
+        type: "DriftEstimator" # This determines the cost formulation (currently just time needed to execute)
+        drift_weight: 0.5
         orientation_error_weight: 10
         world_frame: "world"
         ground_truth_frame: "firefly/base_link"
+        floorplan_frame: "floorplan"
         drifty_frame: "rovioli/imu"
         drift_estimation_radius: 0.5
+        use_opt_traj : true
+        use_floorplan : true
+        accumulate : true
 
       value_computer:
         type: "GlobalNormalizedGain" # This function just accumulates the value in the RRT Graph, probably shouldn't be touched

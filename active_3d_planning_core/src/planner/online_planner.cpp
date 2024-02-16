@@ -328,6 +328,9 @@ void OnlinePlanner::verifyTree(TrajectorySegment* next_segment) {
 }
 
 bool OnlinePlanner::requestNextTrajectory() {
+  std::cout << "Request Trajectories!" << std::endl;
+
+
   if (current_segment_->children.empty()) {
     // No trajectories available: call the backtracker
     back_tracker_->trackBack(current_segment_.get());
@@ -480,6 +483,9 @@ bool OnlinePlanner::requestNextTrajectory() {
 }
 
 void OnlinePlanner::expandTrajectories() {
+
+  //std::cout << "Expanding Trajectories!" << std::endl;
+
   // Check max number of tries already and min value found
   if (p_max_new_segments_ > 0 && new_segments_ >= p_max_new_segments_ &&
       min_new_value_reached_) {

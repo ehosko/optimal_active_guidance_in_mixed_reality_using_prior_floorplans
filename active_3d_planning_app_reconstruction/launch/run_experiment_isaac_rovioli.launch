@@ -34,7 +34,8 @@
   <arg name="visualize" default="true"/>
 
   <!--  Floorplan arguments -->
-  <arg name="use_opt_traj" default="false"/>
+  <arg name="use_opt_traj" default="true"/>
+  <arg name="use_floorplan" default="true"/>
   
   <!--  Experiment arguments --> 
   <!-- <arg name="experiment_config" default="Warehouse.yaml"/> -->
@@ -45,11 +46,11 @@
   <arg name="data_directory" default="/home/michbaum/Projects/optag_EH/data"/> 
   <!-- Frequency in seconds when the current map state should be saved to disk -->
   <arg name="data_frequency" default="30.0" />
-  <arg name="time_limit" default="3" /> <!-- in minutes, full map takes ~30min, due to sim_time_factor set to 6h -->
+  <arg name="time_limit" default="30" /> <!-- in minutes, full map takes ~30min, due to sim_time_factor set to 6h -->
   <!-- If we use a simulation to gather data or a real device (not implemented yet) -->
   <arg name="use_sim" default="true" /> 
   <!-- <arg name="output_file" default="warehouse_drift_evaluation_reconstruction_planner.csv" /> -->
-  <arg name="output_folder" default="/home/michbaum/Projects/optag_EH/data/drift_logs/maze_drift_evaluation_example_config/" />
+  <arg name="output_folder" default="/home/michbaum/Projects/optag_EH/data/maze_test_eval/" />
   <arg name="relativePose_output_file" default="relative_pose_error.csv" />
   <arg name="absolutePoseGt_output_file" default="stamped_groundtruth.txt" />
   <arg name="absolutePoseDrifty_output_file" default="stamped_traj_estimate.txt" />
@@ -183,12 +184,13 @@
       <param name="ns_planner" value="/planner/planner_node" />
       <param name="ns_voxblox" value="/planner/voxblox_node" />
       <param name="delay" value="$(arg delay)" />
-      <!-- <param name="startup_timeout" value="30.0" /> -->
+      <param name="startup_timeout" value="60.0" />
       <param name="evaluate" value="$(arg record_data)" />
       <param name="eval_directory" value="$(arg data_directory)" />
       <param name="eval_frequency" value="$(arg data_frequency)" />
       <param name="time_limit" value="$(arg time_limit)" /> <!-- in minutes -->
       <param name="use_opt_traj" value = "$(arg use_opt_traj)" />
+      <param name="output_folder" value="$(arg output_folder)" />
     </node>
 
 
@@ -319,20 +321,34 @@
 
     <param name="l_max" value="2"/>
 
+    <param name="transformation_thresh" value="2"/>
+
     <param name="d_l" value="0.3"/>
     <param name="theta_l" value="0.26"/>
 
-    <param name="num_samples" value="500"/> <!-- 500 -->
+    <param name="num_samples" value="350"/> <!-- 500 -->
     <param name="threshold" value="5"/>
     <param name="skip_distance" value="5"/>
     <param name="lkh_executable" value="/home/michbaum/Projects/LKH/LKH-2.0.9/LKH"/>
+    <param name="occupancy_threshold" value="3"/>
+    <param name="sample_method" value="random"/>
 
-    <param name="radius" value="1"/>
+    <param name="radius" value="1.5"/>
+    <param name="max_radius" value="10"/>
 
-    <param name="log_file" value="/home/michbaum/Projects/optag_EH/data/floorplan/pointCloudSamples.txt"/>
+    <param name="log_file" value="$(arg output_folder)/transformation.txt"/>
 
     <rosparam command="load" file="$(find active_3d_planning_app_reconstruction)/cfg/voxblox/transforms.yaml"/> 
-    <param name="path_log_file" value="/home/michbaum/Projects/optag_EH/data/floorplan/path.txt"/>
+
+    <param name="edge_log_file" value="$(arg output_folder)/edges.txt"/>
+    <param name="node_log_file" value="$(arg output_folder)/nodes.txt"/>
+    <param name="opt_path_log_file" value="$(arg output_folder)/opt_path.txt"/>
+    <param name="path_log_file" value="$(arg output_folder)/path.txt"/>
+    <param name="occupancy_log_file" value="$(arg output_folder)/occupancy.csv"/>
+    <param name="occupancy_opt_log_file" value="$(arg output_folder)/occupancy_opt.csv"/>
+
+    <param name="use_floorplan_loc" value="$(arg use_floorplan)"/>
+
 
   </node>
 

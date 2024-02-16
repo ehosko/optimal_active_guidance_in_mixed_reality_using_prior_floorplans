@@ -101,7 +101,7 @@ trajectory_evaluator:
         drifty_frame: "rovioli/imu"
         drift_estimation_radius: 0.5
         use_opt_traj : false
-        use_floorplan : false
+        use_floorplan : true
         accumulate : true
 
       value_computer:

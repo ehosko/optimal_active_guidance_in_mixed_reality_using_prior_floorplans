@@ -35,6 +35,8 @@ double GlobalNormalizedGain::findBest(TrajectorySegment* current, double gain,
   double value = 0.0;
   gain += current->gain;
   cost += current->cost;
+  // gain = 1.0;
+  // std::cout << "Gain: " << gain << " Cost: " << cost << std::endl;
   if (cost > 0) {
     value = gain / cost;
   }

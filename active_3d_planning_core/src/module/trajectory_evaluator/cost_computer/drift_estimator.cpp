@@ -60,8 +60,18 @@ bool DriftEstimator::computeCost(TrajectorySegment* traj_in) {
     traj_in->cost = segment_time_cost;
     //std::cout << "Segment Time cost: " << segment_time_cost << std::endl;
     // TODO: (but do this every time??) - adapt weight
-    if(use_opt_traj_)
-      traj_in->cost += (1 - drift_weight_) * computeOptTrajError(current_position_back,current_orientation_back);
+    if(use_opt_traj_){
+      // double opt_traj_error = 0.0;
+      // for (int i = 0; i < traj_in->trajectory.size(); ++i) {
+      //   opt_traj_error += computeOptTrajError(traj_in->trajectory[i].position_W,traj_in->trajectory[i].orientation_W_B);;
+      //   //last_point = traj_in->trajectory[i].position_W;
+      // }
+      //traj_in->cost += (1 - drift_weight_) * opt_traj_error;
+      //opt_traj_error = std::pow(opt_traj_error,2);
+      double opt_traj_error = computeOptTrajError(current_position_back, current_orientation_back);
+      //std::cout << "Optimal trajectory error: " << opt_traj_error << std::endl;
+      traj_in->cost = opt_traj_error;
+    }
     if (p_accumulate_ && traj_in->parent) {
     // TODO: Check that this really happens - it should!
       traj_in->cost += traj_in->parent->cost;
@@ -82,22 +92,35 @@ bool DriftEstimator::computeCost(TrajectorySegment* traj_in) {
 
   if(use_floorplan_asGT)
   {
-    drift_cost = computeDriftErrorFloorplan(drifty_position, drifty_orientation);
+    drift_cost = computeDriftErrorFloorplan(current_position_back, current_orientation_back);
   }
   else
   {
     drift_cost = computeDriftError(drifty_position, drifty_orientation);
   }
 
-  traj_in->cost = segment_time_cost + drift_weight_ * drift_cost;
+  // traj_in->cost = (1 - drift_weight_) * segment_time_cost + drift_weight_ * drift_cost;
+  traj_in->cost = (1 - drift_weight_) * segment_time_cost + drift_weight_ * drift_cost;
 
-  if(use_opt_traj_)
-    traj_in->cost += (1 - drift_weight_) * computeOptTrajError(current_position_back,current_orientation_back);
+
+  if(use_opt_traj_){
+    // double opt_traj_error = 0.0;
+    // for (int i = 0; i < traj_in->trajectory.size(); ++i) {
+    //   opt_traj_error += computeOptTrajError(traj_in->trajectory[i].position_W,traj_in->trajectory[i].orientation_W_B);;
+    //   //last_point = traj_in->trajectory[i].position_W;
+    // }
+    //opt_traj_error = std::pow(opt_traj_error,2);
+    //traj_in->cost += (1 - drift_weight_) * opt_traj_error;
+    double opt_traj_error = computeOptTrajError(current_position_back, current_orientation_back);
+    //std::cout << "Optimal trajectory error: " << opt_traj_error << std::endl;
+    // traj_in->cost = (1- drift_weight_) * opt_traj_error + drift_weight_ * drift_cost;
+    traj_in->cost = opt_traj_error + drift_weight_ * drift_cost;
+  }
       
   if (p_accumulate_ && traj_in->parent) {
     // TODO: Check that this really happens - it should!
-    traj_in->cost += traj_in->parent->cost;
-    // traj_in->cost += traj_in->parent->cost * drift_discount_;
+    //traj_in->cost += traj_in->parent->cost;
+    traj_in->cost += traj_in->parent->cost * drift_discount_;
   }
   return true;
 }
@@ -206,7 +229,11 @@ double DriftEstimator::computeDriftErrorFloorplan(const Eigen::Vector3d current_
     Eigen::Vector3d euler = relativeOrientation.toRotationMatrix().eulerAngles(0, 1, 2);
     double angleError = euler.norm(); // Angle is the magnitude of the Euler angles vector
 
-    return translationError + orientation_error_weight_ * angleError;
+    // std::cout << "Floorplan Translation Drift Error: " << translationError << std::endl;
+    // std::cout << "Floorplan Orientation Drift Error: " << angleError << std::endl;
+
+    //return (projPos - std::get<0>(floorplan_pose)).norm();
+    return translationError + angleError;
 }
 
 double DriftEstimator::computeOptTrajError(const Eigen::Vector3d current_position, const Eigen::Quaterniond current_orientation)
@@ -217,11 +244,13 @@ double DriftEstimator::computeOptTrajError(const Eigen::Vector3d current_positio
   Eigen::Vector3d projPos;
   projectOnFloor(current_position, current_orientation, projPos);
 
-  std::cout<<"Opt Traj Pose: " << opt_traj_position.x() << " " <<  opt_traj_position.y(); 
+  // std::cout << "Current Pose: " << current_position.x() << " " << current_position.y() << std::endl;
+  // std::cout << "Projected Pose: " << projPos.x() << " " << projPos.y() << std::endl;
+  // std::cout<<"Opt Traj Pose: " << opt_traj_position.x() << " " <<  opt_traj_position.y(); 
 
   double translationError = (projPos - opt_traj_position).norm();
 
-  std::cout << "Optimal trajectory error: " << translationError << std::endl;
+  // std::cout << "Optimal trajectory error: " << translationError << std::endl;
   return translationError;
 }
 
@@ -235,6 +264,11 @@ void DriftEstimator::projectOnFloor(Eigen::Vector3d pos, Eigen::Quaterniond q, E
   double distance = -normalVector.dot(pos);
   projVec = pos - distance * normalVector;
   projVec.z() = 0;
+
+  // Eigen::Matrix3d rotationMatrix = q.normalized().toRotationMatrix();
+  // Eigen::Vector3d projectedVector = rotationMatrix.transpose() * pos;
+
+  //projectedVector.z() = 0;
 }
 
 }  // namespace cost_computer
