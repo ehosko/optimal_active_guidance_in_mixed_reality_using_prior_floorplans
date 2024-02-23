@@ -31,6 +31,37 @@ def plot_translation_error(csv_file):
     plt.tight_layout()
     plt.show()
 
+def plot_translation_error(gt, est):
+    # Load the CSV file into a pandas DataFrame
+    data = pd.DataFrame()
+    data['Time'] = gt['Time']
+    data['TranslationError'] = ((gt['xPostition'] - est['xPostition'])**2 + (gt['yPostition'] - est['yPostition'])**2)**0.5
+
+    # Convert the 'Timestamp' column to datetime format
+    # data['Timestamp'] = pd.to_datetime(data['Timestamp'])
+
+    # Set the figure size
+    plt.figure(figsize=(10, 6))
+
+    # Plot TranslationError over Timestamp
+    sns.lineplot(data=data, x='Time', y='TranslationError', label='Translation Error')
+
+    # Add title and labels
+    plt.title('Translation Error Over Time')
+    plt.xlabel('Timestamp')
+    plt.ylabel('Translation Error (meters)')
+
+    # Limit y-axis to 5
+    # plt.ylim(0, 5)
+
+    # Rotate x-axis labels for better visibility
+    plt.xticks(rotation=45)
+
+    # Display the plot
+    plt.tight_layout()
+    plt.show()
+
+
 def plot_angle_error(csv_file):
     # Load the CSV file into a pandas DataFrame
     data = pd.read_csv(csv_file)

@@ -92,14 +92,14 @@ trajectory_evaluator:
 
       cost_computer:
         type: "DriftEstimator" # This determines the cost formulation (currently just time needed to execute)
-        drift_weight: 1.0
+        drift_weight: 0.5
         drift_discount: 0.75
         orientation_error_weight: 10
         world_frame: "world"
         ground_truth_frame: "firefly/base_link"
         floorplan_frame: "floorplan"
         drifty_frame: "rovioli/imu"
-        drift_estimation_radius: 0.5
+        drift_estimation_radius: 1.0
         use_opt_traj : false
         use_floorplan : true
         accumulate : true

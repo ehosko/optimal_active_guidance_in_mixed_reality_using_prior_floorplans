@@ -1,0 +1,14 @@
+<launch>
+
+<arg name="output_folder" default="/home/michbaum/Projects/optag_EH/data/maze_test_eval/"/>
+<arg name="part" default="0"/>
+
+    <!-- Experiment launcher, data generation-->
+    <node name="eval_data_rosbag_node" pkg="active_3d_planning_app_reconstruction" type="eval_data_rosbag_node.py" output="screen" required="true">
+      <remap from="odometry" to="/rovioli/odom_T_M_I" />
+       <remap from="gtPosition" to="/firefly/ground_truth/position" />
+      <param name="output_folder" value="$(arg output_folder)" />
+      <param name="part" value="$(arg part)" />
+    </node>
+
+</launch>

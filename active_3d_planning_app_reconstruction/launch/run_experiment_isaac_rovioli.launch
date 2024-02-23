@@ -309,6 +309,7 @@
     <param name="floorplan_origin_y" value="0.0"/>
     <param name="floorplan_origin_z" value="0.0"/>
 
+    <!-- These parameters are given -->
     <param name="ray_length" value="$(arg ray_length)"/>
     <param name="sampling_time" value="0.0"/>
     <param name="focal_length" value="320.0"/>
@@ -327,14 +328,14 @@
     <param name="theta_l" value="0.26"/>
 
     <param name="num_samples" value="350"/> <!-- 500 -->
-    <param name="threshold" value="5"/>
-    <param name="skip_distance" value="5"/>
+    <param name="threshold" value="5"/> <!-- Threshold for A* alg -->
+    <param name="skip_distance" value="1"/> <!-- Skip distance  from occupied voxels for traversibility-->
     <param name="lkh_executable" value="/home/michbaum/Projects/LKH/LKH-2.0.9/LKH"/>
-    <param name="occupancy_threshold" value="3"/>
+    <param name="occupancy_threshold" value="3"/> <!-- Within this threshold from contour mark as occupied-->
     <param name="sample_method" value="random"/>
 
-    <param name="radius" value="1.5"/>
-    <param name="max_radius" value="10"/>
+    <param name="radius" value="1.5"/> <!-- Radius for the node on floorplan to be considered as visited -->
+    <param name="max_radius" value="10"/> <!-- Max Radius for the next node on floorplan before rewirring -->
 
     <param name="log_file" value="$(arg output_folder)/transformation.txt"/>
 

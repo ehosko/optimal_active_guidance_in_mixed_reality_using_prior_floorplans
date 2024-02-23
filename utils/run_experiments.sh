@@ -13,9 +13,11 @@ Environment="maze"
 # Environment="warehouse"
 
 # Set Planners
-planners=("reconstruction_planner" "exploration_planner" "example_config" "drift_aware_planner" "drift_aware_floorplan_planner" "drift_aware_floorplan_TSP_planner" "drift_aware_TSP_planner")
+planners=("reconstruction_planner" "drift_aware_planner" "drift_aware_floorplan_planner" "drift_aware_floorplan_TSP_planner" "drift_aware_TSP_planner" "exploration_planner" "example_config")
+# planners=("drift_aware_floorplan_planner")
 
-number_runs=1
+
+number_runs=5
 
 for planner in "${planners[@]}"
 do
@@ -29,14 +31,14 @@ do
         terminator -T "planner" -e "bash -c 'source /home/michbaum/Projects/optag_EH/devel/setup.bash && 
         roslaunch active_3d_planning_app_reconstruction run_experiment_isaac_rovioli.launch output_folder:="$folder_name" planner_config:="planners/$planner.yaml" '" &
         sleep 7
-        terminator -T "rovioli" -e "bash -c 'source /home/michbaum/Projects/maplab/devel/setup.bash && 
+        terminator -T "rovioli_${planner}_${i}" -e "bash -c 'source /home/michbaum/Projects/maplab/devel/setup.bash && 
         roslaunch maplab_node optag-maplab-node-w-rovioli.launch output_folder:="$folder_name"; bash'"
 
         sleep 3660  # Wait an hour
         #sleep 130  # Wait 2 minutes
 
         # Send Ctrl+C command to the second Terminator tab by name
-        send_ctrl_c_to_window "rovioli"
+        send_ctrl_c_to_window "rovioli_${planner}_${i}"
 
         sleep 60
 

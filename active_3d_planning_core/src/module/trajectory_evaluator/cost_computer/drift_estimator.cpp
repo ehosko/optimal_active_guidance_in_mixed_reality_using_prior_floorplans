@@ -92,7 +92,7 @@ bool DriftEstimator::computeCost(TrajectorySegment* traj_in) {
 
   if(use_floorplan_asGT)
   {
-    drift_cost = computeDriftErrorFloorplan(current_position_back, current_orientation_back);
+    drift_cost = computeDriftErrorFloorplan(drifty_position, drifty_orientation);
   }
   else
   {
@@ -114,7 +114,7 @@ bool DriftEstimator::computeCost(TrajectorySegment* traj_in) {
     double opt_traj_error = computeOptTrajError(current_position_back, current_orientation_back);
     //std::cout << "Optimal trajectory error: " << opt_traj_error << std::endl;
     // traj_in->cost = (1- drift_weight_) * opt_traj_error + drift_weight_ * drift_cost;
-    traj_in->cost = opt_traj_error + drift_weight_ * drift_cost;
+    traj_in->cost = (1 - drift_weight_) * opt_traj_error + drift_weight_ * drift_cost;
   }
       
   if (p_accumulate_ && traj_in->parent) {
