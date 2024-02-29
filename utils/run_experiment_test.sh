@@ -8,7 +8,8 @@ send_ctrl_c_to_window() {
     xdotool windowactivate --sync $window_id key Ctrl+Shift+Q
 }
 
-folder_name="/home/michbaum/Projects/optag_EH/data/warehouse_test/"
+folder_name="/home/michbaum/Projects/optag_EH/data/maze_test_eval/run_1/"
+mkdir -p $folder_name
 
 # Test Experiment
 terminator -T "planner" -e "bash -c 'source /home/michbaum/Projects/optag_EH/devel/setup.bash && 

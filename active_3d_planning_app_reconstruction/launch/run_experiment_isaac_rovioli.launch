@@ -331,7 +331,7 @@
     <param name="d_l" value="0.3"/> <!-- Threshold between two position before updating floor plan localization-->
     <param name="theta_l" value="0.26"/> <!-- Threshold between two rotations before updating floor plan localization-->
 
-    <param name="num_samples" value="350"/> <!-- 350 -->
+    <param name="num_samples" value="300"/> <!-- 350 -->
     <param name="skip_distance" value="2"/> <!--Skip distance  from occupied voxels for traversibility-->
     <param name="lkh_executable" value="/home/michbaum/Projects/LKH/LKH-2.0.9/LKH"/>
 

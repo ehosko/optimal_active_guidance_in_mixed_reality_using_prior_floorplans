@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-file = '/home/michbaum/Projects/optag_EH/data/maze/drift_aware_floorplan_planner/run_6/opt_path.txt'
+file = '/home/michbaum/Projects/optag_EH/data/maze_test_eval/run_1/opt_path.txt'
 df_graph = pd.read_csv(file, sep=' ', header=None, names=['indx', 'vertex', 'x', 'y', 'dist'])
 
 print(df_graph.head())
