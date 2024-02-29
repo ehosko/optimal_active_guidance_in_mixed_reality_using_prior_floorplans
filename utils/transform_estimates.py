@@ -33,7 +33,7 @@ def transform_estimates(path, i):
     print(df_traj.head())
 
 
-    trajfile_new = path + 'run_' + str(i) + '/traj_rosbag_estimate_transform_2_test.csv'
+    trajfile_new = path + 'run_' + str(i) + '/traj_rosbag_estimate_transform_2.csv'
     df_traj.to_csv(trajfile_new, index=False)
 
 def concat_baglogs(path, i):
@@ -80,7 +80,7 @@ def concat_baglogs(path, i):
 def main():
     
     planner_list = ['drift_aware_floorplan_planner', 'drift_aware_planner', 'drift_aware_floorplan_TSP_planner', 'drift_aware_TSP_planner', 'reconstruction_planner', 'exploration_planner', 'example_config']
-    # planner_list = ['drift_aware_floorplan_planner']
+    # planner_list = ['reconstruction_planner']
     number_runs = 5
 
     enviroment = 'maze'
@@ -93,9 +93,6 @@ def main():
         
         # Get all subdirectories for each run
         for i in range(1, number_runs + 1):
-            
-            if planner == 'example_config' and i == 5:
-                continue
 
             # transform_estimates(path, i)
             concat_baglogs(path, i)

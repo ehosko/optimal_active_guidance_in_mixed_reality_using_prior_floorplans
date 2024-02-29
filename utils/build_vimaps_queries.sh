@@ -4,7 +4,7 @@
 source /home/michbaum/Projects/maplab/devel/setup.bash # Workstation
 
 # Define the path to the directory containing your rosbag files
-rosbag_dir="/home/michbaum/Projects/optag_EH/data/sim_bags/maze_slowdown_gt_split/"
+rosbag_dir="/home/michbaum/Projects/optag_EH/data/sim_bags/warehouse_slowdown_gt_without_windows_split/"
 
 # Define the package containing your launch file
 package="maplab_node"
@@ -20,6 +20,8 @@ rosbag_files=(*.bag)
 
 echo "Found ${#rosbag_files[@]} rosbag files in $rosbag_dir"
 
+folder_name="/home/michbaum/Projects/maplab/data/vimaps/warehouse/warehouse_query_maps_bag/"
+
 # Loop through each rosbag file
 for rosbag_file in "${rosbag_files[@]}"; do
     # Extract the number from the filename using awk
@@ -30,7 +32,7 @@ for rosbag_file in "${rosbag_files[@]}"; do
         echo "Playing rosbag: $rosbag_file"
         
         # Start the launch file in the background
-        roslaunch "$package" "$launch_file" &
+        roslaunch "$package" "$launch_file" output_folder:="$folder_name"&
         launch_pid=$!
 
         sleep 7

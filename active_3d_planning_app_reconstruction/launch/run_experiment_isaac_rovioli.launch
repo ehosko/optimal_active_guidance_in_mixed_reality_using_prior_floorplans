@@ -266,7 +266,7 @@
       <param name="verbose" value="$(arg verbose_planner)" />
       <param name="visualize" value="$(arg visualize)" />
       <param name="log_performance" value="$(arg record_data)" />
-      <param name="log_drift_performance" value="true" /> <!-- Whether to log drift estimation to a csv file -->
+      <param name="log_drift_performance" value="false" /> <!-- Whether to log drift estimation to a csv file / old method, now done with eval_data_node.py-->
       <param name="drift_log_dir" value="$(arg output_folder)" />
       <!-- TODO: CHANGE -->
       <param name="drift_log_file" value="$(arg relativePose_output_file)" />
@@ -275,6 +275,7 @@
       <!-- Frames to utilize to extract the current gt pose of the agent in the simulation -->
       <param name="world_frame" value="world" />
       <param name="ground_truth_frame" value="firefly/base_link" />
+      <param name="floorplan_frame" value="floorplan" />
       <param name="drifty_frame" value="rovioli/imu" />
       <param name="optimal_trajectory_frame" value="optimal_trajectory"/>
       <!-- Experiment dependent -->
@@ -301,13 +302,14 @@
  </group>
 
  <node name="floorplan_node" pkg="localization_using_floorplans" type="ros_localization_node" output="screen">
-    <param name="floorplan_path" value="/home/michbaum/Projects/optag_EH/data/floorplan/MazeOccupancyMap.png"/>
-    <param name="floorplan_resolution" value="0.1"/>
+
+    <remap from="odometry" to="/rovioli/odom_T_M_I" />
+    <remap from="pointcloud" to="/isaac/isaac_sensor_model/isaac_sensor_out"/>
+    <remap from="transform_G_I" to="/rovioli/Transform_G_I" />
+
+    <param name="floorplan_path" value="/home/michbaum/Projects/optag_EH/data/floorplan/MazeOccupancyMap.png"/> <!-- WarehouseOccupancyMap.png -->
     <param name="floorplan_height" value="40"/>
     <param name="floorplan_width" value="40"/>
-    <param name="floorplan_origin_x" value="0.0"/>
-    <param name="floorplan_origin_y" value="0.0"/>
-    <param name="floorplan_origin_z" value="0.0"/>
 
     <!-- These parameters are given -->
     <param name="ray_length" value="$(arg ray_length)"/>
@@ -315,24 +317,28 @@
     <param name="focal_length" value="320.0"/>
     <param name="resolution_x" value="640"/>
     <param name="resolution_y" value="480"/>
-    <param name="voxel_size" value="0.1"/>
-    <param name="ray_step" value="0.1"/>
     <param name="downsampling_factor" value="1.0"/>
-    <param name="epsilon" value="0.05"/>
+
+    <!-- These parameters are to be tuned -->
+    <param name="voxel_size" value="0.1"/> <!-- 0.1m x 0.1m  per pixel -->
+    <param name="ray_step" value="0.1"/>
+    <param name="epsilon" value="0.05"/> <!-- Epsilon to count grid cell as visited -->
 
     <param name="l_max" value="2"/>
 
-    <param name="transformation_thresh" value="2"/>
+    <param name="transformation_thresh" value="2"/> <!-- Threshold for transformation to either use estimated position on floor plan or SLAM estimate-->
 
-    <param name="d_l" value="0.3"/>
-    <param name="theta_l" value="0.26"/>
+    <param name="d_l" value="0.3"/> <!-- Threshold between two position before updating floor plan localization-->
+    <param name="theta_l" value="0.26"/> <!-- Threshold between two rotations before updating floor plan localization-->
 
-    <param name="num_samples" value="350"/> <!-- 500 -->
-    <param name="threshold" value="5"/> <!-- Threshold for A* alg -->
-    <param name="skip_distance" value="1"/> <!-- Skip distance  from occupied voxels for traversibility-->
+    <param name="num_samples" value="350"/> <!-- 350 -->
+    <param name="skip_distance" value="2"/> <!--Skip distance  from occupied voxels for traversibility-->
     <param name="lkh_executable" value="/home/michbaum/Projects/LKH/LKH-2.0.9/LKH"/>
-    <param name="occupancy_threshold" value="3"/> <!-- Within this threshold from contour mark as occupied-->
-    <param name="sample_method" value="random"/>
+
+    <param name="occupancy_threshold" value="3"/>  <!--Within this threshold from contour mark as occupied-->
+    <param name="sample_method" value="random"/>  <!--Random or uniform sampling-->
+    <param name="contours_traversable" value="false"/> <!--If the contours are traversable (e.g. Warehouse env)-->
+    <param name="contour_cost_factor" value="300"/> <!--Cost factor for contour traversability-->
 
     <param name="radius" value="1.5"/> <!-- Radius for the node on floorplan to be considered as visited -->
     <param name="max_radius" value="10"/> <!-- Max Radius for the next node on floorplan before rewirring -->
@@ -341,15 +347,21 @@
 
     <rosparam command="load" file="$(find active_3d_planning_app_reconstruction)/cfg/voxblox/transforms.yaml"/> 
 
-    <param name="edge_log_file" value="$(arg output_folder)/edges.txt"/>
+    <!-- <param name="edge_log_file" value="$(arg output_folder)/edges.txt"/>
     <param name="node_log_file" value="$(arg output_folder)/nodes.txt"/>
+    <param name="path_log_file" value="$(arg output_folder)/path.txt"/> -->
+
     <param name="opt_path_log_file" value="$(arg output_folder)/opt_path.txt"/>
-    <param name="path_log_file" value="$(arg output_folder)/path.txt"/>
     <param name="occupancy_log_file" value="$(arg output_folder)/occupancy.csv"/>
     <param name="occupancy_opt_log_file" value="$(arg output_folder)/occupancy_opt.csv"/>
 
     <param name="use_floorplan_loc" value="$(arg use_floorplan)"/>
 
+    <!-- Environemnt specific params -->
+    <param name="x_min" value="-20"/>
+    <param name="y_max" value="20"/>
+    <param name="x_max" value="20"/>
+    <param name="y_min" value="-20"/>
 
   </node>
 

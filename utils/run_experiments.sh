@@ -9,12 +9,11 @@ send_ctrl_c_to_window() {
 }
 
 # Set Environment
+# Environment="Warehouse"
 Environment="maze"
-# Environment="warehouse"
 
 # Set Planners
 planners=("reconstruction_planner" "drift_aware_planner" "drift_aware_floorplan_planner" "drift_aware_floorplan_TSP_planner" "drift_aware_TSP_planner" "exploration_planner" "example_config")
-# planners=("drift_aware_floorplan_planner")
 
 
 number_runs=5
@@ -34,7 +33,8 @@ do
         terminator -T "rovioli_${planner}_${i}" -e "bash -c 'source /home/michbaum/Projects/maplab/devel/setup.bash && 
         roslaunch maplab_node optag-maplab-node-w-rovioli.launch output_folder:="$folder_name"; bash'"
 
-        sleep 3660  # Wait an hour
+        sleep 2500 # Wait 40 minutes
+        # sleep 3660  # Wait an hour
         #sleep 130  # Wait 2 minutes
 
         # Send Ctrl+C command to the second Terminator tab by name

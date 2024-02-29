@@ -8,17 +8,17 @@ send_ctrl_c_to_window() {
     xdotool windowactivate --sync $window_id key Ctrl+Shift+Q
 }
 
+folder_name="/home/michbaum/Projects/optag_EH/data/warehouse_test/"
+
 # Test Experiment
 terminator -T "planner" -e "bash -c 'source /home/michbaum/Projects/optag_EH/devel/setup.bash && 
-roslaunch active_3d_planning_app_reconstruction run_experiment_isaac_rovioli.launch output_folder:="/home/michbaum/Projects/optag_EH/data/maze_test_eval/" planner_config:="planners/floorplan_drift_aware_planner.yaml"'" &
+roslaunch active_3d_planning_app_reconstruction run_experiment_isaac_rovioli.launch output_folder:="$folder_name" planner_config:="planners/reconstruction_planner.yaml"'" &
 sleep 7
 terminator -T "rovioli" -e "bash -c 'source /home/michbaum/Projects/maplab/devel/setup.bash && 
-roslaunch maplab_node optag-maplab-node-w-rovioli.launch; bash'" 
+roslaunch maplab_node optag-maplab-node-w-rovioli.launch output_folder:="$folder_name"; bash'" 
 
-sleep 3660  # Wait an hour
-# sleep 1880  # Wait half an hour
-# sleep 400 # Wait 6+ minutes
-# sleep 660  
+
+sleep 400 # Wait 6+ minutes
 
 # Send Ctrl+C command to the second Terminator tab by name
 send_ctrl_c_to_window "rovioli"

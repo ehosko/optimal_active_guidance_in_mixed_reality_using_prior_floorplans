@@ -149,15 +149,9 @@ class EvalData(object):
             self.cpu_time_srv = rospy.ServiceProxy(
                 self.ns_planner + "/get_cpu_time", SetBool)
             
-            # self.gt_sub = rospy.Subscriber('ground_truth_odometry', Odometry,self.gt_odom_callback,
-            #                                       queue_size=10)
+
             self.drifty_sub = rospy.Subscriber('odometry', Odometry,self.drifty_odom_callback,
                                                queue_size=10)
-            # self.gt_sub = message_filters.Subscriber('ground_truth_odometry', Odometry)
-            # self.drifty_sub = message_filters.Subscriber('odometry', Odometry)
-
-            # self.ts = message_filters.ApproximateTimeSynchronizer([self.gt_sub, self.drifty_sub], 20, 0.1, allow_headerless=True)
-            # self.ts.registerCallback(self.odom_callback)
 
             # Finish
             self.writelog("Data folder created at '%s'." % self.eval_directory)
@@ -189,9 +183,9 @@ class EvalData(object):
             rospy.wait_for_message("isaac_simulation_ready", String)
         rospy.loginfo("Waiting for isaac MAV simulation to setup... done.")
 
-         # Wait for optimal trajectory to be calculated
-        if self.use_opt_traj:
-            rospy.wait_for_message("optimal_trajectory_ready", String)
+        # # Wait for optimal trajectory to be calculated
+        # if self.use_opt_traj:
+        #     rospy.wait_for_message("optimal_trajectory_ready", String)
 
         # Launch planner (by service, every planner needs to advertise this
         # service when ready)

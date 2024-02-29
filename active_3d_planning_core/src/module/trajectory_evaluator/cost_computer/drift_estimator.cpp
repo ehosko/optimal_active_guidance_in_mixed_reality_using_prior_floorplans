@@ -12,7 +12,6 @@ DriftEstimator::DriftEstimator(PlannerI& planner) : CostComputer(planner), tf_li
 void DriftEstimator::setupFromParamMap(Module::ParamMap* param_map) {
   // Needed in any case, want to accumulate from parents
   setParam<bool>(param_map, "accumulate", &p_accumulate_, true);
-  // TODO: (ehosko) Adapt weight - was 1 before
   setParam<double>(param_map, "drift_weight", &drift_weight_, 0.5);
   setParam<double>(param_map, "orientation_error_weight", &orientation_error_weight_, 10);
   setParam<std::string>(param_map, "world_frame", &source_frame_, "world");
@@ -37,7 +36,7 @@ bool DriftEstimator::computeCost(TrajectorySegment* traj_in) {
   double segment_time_cost = static_cast<double>(traj_in->trajectory.back().time_from_start_ns -
                                         traj_in->trajectory.front().time_from_start_ns) * 1.0e-9;
 
-  std::tuple<Eigen::Vector3d, Eigen::Quaterniond> drifty_pose = getCurrentPose(source_frame_, drifty_frame_);
+  std::tuple<Eigen::Vector3d, Eigen::Quaterniond> drifty_pose = getCurrentPose(drifty_frame_,source_frame_);
   Eigen::Vector3d drifty_position = std::get<0>(drifty_pose);
   Eigen::Quaterniond drifty_orientation = std::get<1>(drifty_pose);
   Eigen::Vector3d current_position_front = traj_in->trajectory.front().position_W;
@@ -61,13 +60,6 @@ bool DriftEstimator::computeCost(TrajectorySegment* traj_in) {
     //std::cout << "Segment Time cost: " << segment_time_cost << std::endl;
     // TODO: (but do this every time??) - adapt weight
     if(use_opt_traj_){
-      // double opt_traj_error = 0.0;
-      // for (int i = 0; i < traj_in->trajectory.size(); ++i) {
-      //   opt_traj_error += computeOptTrajError(traj_in->trajectory[i].position_W,traj_in->trajectory[i].orientation_W_B);;
-      //   //last_point = traj_in->trajectory[i].position_W;
-      // }
-      //traj_in->cost += (1 - drift_weight_) * opt_traj_error;
-      //opt_traj_error = std::pow(opt_traj_error,2);
       double opt_traj_error = computeOptTrajError(current_position_back, current_orientation_back);
       //std::cout << "Optimal trajectory error: " << opt_traj_error << std::endl;
       traj_in->cost = opt_traj_error;
@@ -104,13 +96,6 @@ bool DriftEstimator::computeCost(TrajectorySegment* traj_in) {
 
 
   if(use_opt_traj_){
-    // double opt_traj_error = 0.0;
-    // for (int i = 0; i < traj_in->trajectory.size(); ++i) {
-    //   opt_traj_error += computeOptTrajError(traj_in->trajectory[i].position_W,traj_in->trajectory[i].orientation_W_B);;
-    //   //last_point = traj_in->trajectory[i].position_W;
-    // }
-    //opt_traj_error = std::pow(opt_traj_error,2);
-    //traj_in->cost += (1 - drift_weight_) * opt_traj_error;
     double opt_traj_error = computeOptTrajError(current_position_back, current_orientation_back);
     //std::cout << "Optimal trajectory error: " << opt_traj_error << std::endl;
     // traj_in->cost = (1- drift_weight_) * opt_traj_error + drift_weight_ * drift_cost;
@@ -144,7 +129,7 @@ Eigen::Quaterniond transformToEigenQuaternion(const geometry_msgs::TransformStam
 }
 
 std::tuple<Eigen::Vector3d, Eigen::Quaterniond> DriftEstimator::getCurrentPose(const std::string source_frame, const std::string target_frame){
-  // Extract the transform from /world to the target frame at this point in time
+  // Extract the transform from the target frame to the world frame at this point in time
   try
     {
       // Lookup the transform at the time of the pose message
@@ -167,7 +152,7 @@ std::tuple<Eigen::Vector3d, Eigen::Quaterniond> DriftEstimator::getCurrentPose(c
 double DriftEstimator::computeDriftError(const Eigen::Vector3d current_position, const Eigen::Quaterniond current_orientation) {
 
   // Extract the current ground truth pose
-  std::tuple<Eigen::Vector3d, Eigen::Quaterniond> gt_pose = getCurrentPose(source_frame_, gt_frame_);
+  std::tuple<Eigen::Vector3d, Eigen::Quaterniond> gt_pose = getCurrentPose(gt_frame_,source_frame_);
   Eigen::Vector3d gt_position = std::get<0>(gt_pose);
   Eigen::Quaterniond gt_orientation = std::get<1>(gt_pose);
 
@@ -198,7 +183,7 @@ double DriftEstimator::computeDriftError(const Eigen::Vector3d current_position,
 double DriftEstimator::computeDriftErrorFloorplan(const Eigen::Vector3d current_position, const Eigen::Quaterniond current_orientation)
 {
     std::tuple<Eigen::Vector3d, Eigen::Quaterniond> floorplan_pose = getCurrentPose(floorplan_frame_, source_frame_);
-
+ 
     Eigen::Isometry3d pose2 = Eigen::Isometry3d::Identity();
     pose2.translation() = std::get<0>(floorplan_pose);
     pose2.linear() = std::get<1>(floorplan_pose).toRotationMatrix();
@@ -206,16 +191,9 @@ double DriftEstimator::computeDriftErrorFloorplan(const Eigen::Vector3d current_
     Eigen::Vector3d projPos;
     projectOnFloor(current_position, current_orientation, projPos);
 
-    // TODO: (ehosko) Check if this is the correct way to project the orientation (probably not, but it's a start)
-    Eigen::Quaterniond projOrientation = Eigen::Quaterniond::FromTwoVectors(Eigen::Vector3d(0,0,1), current_orientation * Eigen::Vector3d(0,0,1));
-
     Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
     pose1.translation() = projPos;
-    pose1.linear() = projOrientation.toRotationMatrix();
-
-    std::cout<<"Floorplan Pose: " << pose2.translation().x() << " " <<   pose2.translation().y() ; 
-
-    //double translationError = (projPos - opt_traj_position).norm();
+    pose1.linear() = current_orientation.toRotationMatrix();
 
     // Calculate the relative pose
     Eigen::Isometry3d relativePose = pose1.inverse() * pose2;
@@ -229,10 +207,6 @@ double DriftEstimator::computeDriftErrorFloorplan(const Eigen::Vector3d current_
     Eigen::Vector3d euler = relativeOrientation.toRotationMatrix().eulerAngles(0, 1, 2);
     double angleError = euler.norm(); // Angle is the magnitude of the Euler angles vector
 
-    // std::cout << "Floorplan Translation Drift Error: " << translationError << std::endl;
-    // std::cout << "Floorplan Orientation Drift Error: " << angleError << std::endl;
-
-    //return (projPos - std::get<0>(floorplan_pose)).norm();
     return translationError + angleError;
 }
 
@@ -256,19 +230,18 @@ double DriftEstimator::computeOptTrajError(const Eigen::Vector3d current_positio
 
 void DriftEstimator::projectOnFloor(Eigen::Vector3d pos, Eigen::Quaterniond q, Eigen::Vector3d& projVec)
 {
-  Eigen::Matrix3d rotationMatrix = q.normalized().toRotationMatrix();
-  Eigen::Vector3d normalVector(0.0, 0.0, 1.0); // Assuming floor is horizontal
-  normalVector = rotationMatrix * normalVector;
-
-  // Project the point onto the floor
-  double distance = -normalVector.dot(pos);
-  projVec = pos - distance * normalVector;
-  projVec.z() = 0;
-
   // Eigen::Matrix3d rotationMatrix = q.normalized().toRotationMatrix();
-  // Eigen::Vector3d projectedVector = rotationMatrix.transpose() * pos;
+  // Eigen::Vector3d normalVector(0.0, 0.0, 1.0); // Assuming floor is horizontal
+  // normalVector = rotationMatrix * normalVector;
 
-  //projectedVector.z() = 0;
+  // // Project the point onto the floor
+  // double distance = -normalVector.dot(pos);
+  // projVec = pos - distance * normalVector;
+
+
+  // orthogonal projection
+  projVec = pos;
+  projVec.z() = 0;
 }
 
 }  // namespace cost_computer
