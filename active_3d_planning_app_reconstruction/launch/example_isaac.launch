@@ -32,7 +32,8 @@
   <arg name="planner_config" default="planners/example_config.yaml"/>
   
   <!--  Experiment arguments -->  
-  <arg name="experiment_config" default="Warehouse.yaml"/>
+  <!-- <arg name="experiment_config" default="Warehouse.yaml"/>  -->  
+  <arg name="experiment_config" default="Maze.yaml"/>
   
 
   <!-- *** Run the Simulation *** -->
