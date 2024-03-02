@@ -18,3 +18,5 @@
 - git: {local-name: gflags_catkin, uri: 'git@github.com:ethz-asl/gflags_catkin.git'}
 - git: {local-name: catkin_boost_python_buildtool, uri: 'git@github.com:ethz-asl/catkin_boost_python_buildtool.git'}
 - git: {local-name: numpy_eigen, uri: 'git@github.com:ethz-asl/numpy_eigen.git'}
+
+- git: {local-name: localization_using_floorplans, uri: 'git@github.com:ehosko/localization_using_floorplans.git'}
