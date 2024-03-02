@@ -1,58 +1,45 @@
-# optimal\_active\_guidance\_in\_mixed\_reality\_using\_prior\_floorplans
-**optimal\_active\_guidance\_in\_mixed\_reality\_using\_prior\_floorplans** is a Semester Thesis project based upon the modular sample based active path planning approach [Mav Active 3d Planning](https://github.com/ethz-asl/mav_active_3d_planning/).
-
-The goal of this project is:
-- To incorporate strong prior knowledge of an environment in the form of a floorplan into the active path planning approach.
-- To develop a novel approach to incorporate the floorplans in a suitable format into the information gain formulation.
-- To evaluate the system with regards to current state of the art approaches that do not rely on prior knowledge.
-- To build and showcase a simple mixed reality application that uses the developed system to guida a user to explore an environment.
+# Optimal Active Guidance Using Prior Floorplans
+**Optimal Active Guidance Using Prior Floorplans** is the main framework of a semester project extending the work of a former semester thesis [optimal_active_guidance_in_mixed_reality_using_prior_floorplans](https://github.com/michbaum/optimal_active_guidance_in_mixed_reality_using_prior_floorplans). The project is initially based upon the modular sample-based active path planning approach [Mav Active 3d Planning](https://github.com/ethz-asl/mav_active_3d_planning/).
   
 # Setup
 
-The project was intended to run on a Windows machine with WSL2 support. One would run the Simulation environment in Windows, whilst building & running the code in WSL2 on an Ubuntu 18.04 build.
+The project is built and run on Ubuntu 18.04 using ROS Melodic.
 
-## Windows
-
-**Unreal**
-
-1. Download Unreal 4.25
-
-2. Download [Maze Environment]()
-<!-- TODO: Make somehow available -->
-
-3. Open the project in the Unreal 4.25
-
-4. For a performance boost, go into the editor settings and disable the "Use Less CPU when in Background" option.
-
-4. Play the game
+## Install
 
 **Nvidia Omniverse Isaac Sim**
 
-TBD
+This project utilizes Isaac Sim as a graphics simulator. To that end, a custom plugin is used: [Isaac CV Ros](https://github.com/michbaum/isaac_cv_ros/), which is installed automatically through later steps.
 
-## WSL 2
+1. Isaac Sim has to be installed by following the official documentation: [Isaac Sim Install](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_workstation.html#isaac-sim-setup-native-workstation-launcher).
+2. After successful installation, the Ros bridge extension needs to be enabled : [Isaac Sim Ros bridge](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html#enabling-the-ros-bridge-extension)
+
+**mav_active_3d_planning package**
 
 1. Setup mav_active_3d_planning package by following the documentation in [mav_active_3d_planning](mav_active_3d_planning/)  
 (**Important**: Follow the readme in this repository instead of the one in the original mav_active_3d_planning repository. Dependencies and build instructions have changed.)
-
-2. Setup unrealcv for Unreal 4.25 environment by substituting original unreal_cv_ros dependency with [michbaum/unreal_cv_ros: Unreal CV ROS Perception Simulator (github.com)](https://github.com/michbaum/unreal_cv_ros)
-(This has already been taken care of if you followed the instructions above)
-
-3. Setup IP of unreal_cv_ros
-```
-rosed unreal_cv_ros unreal_ros_client.py
-# change ip of unreal_ros_client to its host ip: client = Client(('HOST_IP',9000))
-IMPORTANT: This is really the host ip of your machine, not(!) localhost
-```
-4. Setup [MapLab](https://github.com/michbaum/maplab) for ROVIOLI & evaluation
 
 # Debugging
 
 ## VSCode
 
-To be able to run the debugger on Python 2.7 code utilized in ROS, you need to downgrade your Pyhton extension to version: v2021.9.124654278
+To be able to run the debugger on Python 2.7 code utilized in ROS, you need to downgrade your Python extension to version: v2021.9.124654278
 
-# Run Experiments
+# Data 
+
+Two simulation environments, a maze, and a warehouse, are made available for Isaac Sim : [Environments](https://polybox.ethz.ch/index.php/s/SPR7wtBlBgyCn26)
+
+# Test Installation
+
+1. Launch Isaac Sim and load the maze environment. Press the play button in Isaac Sim.
+2. Launch the sample experiment to verify a correct setup.
+
+```
+roslaunch active_3d_planning_app_reconstruction example_isaac.launch planner_config:=planners/example_config.yaml
+```
+
+
+<!-- # Test Installation
 
 ## Unreal
 
@@ -80,6 +67,6 @@ the real_time_factor (needs to be max_step_size * real_time_update_rate). With a
 
 ## Isaac Sim
 
-TBD
+TBD -->
 
 
