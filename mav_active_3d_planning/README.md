@@ -86,9 +86,10 @@ Packages and their dependencies:
     * `unreal_cv_ros` ([https://github.com/ethz-asl/unreal_cv_ros](https://github.com/ethz-asl/unreal_cv_ros))
     * `rotors_simulator` ([https://github.com/ethz-asl/rotors_simulator](https://github.com/ethz-asl/rotors_simulator))
     * `mav_control_rw` ([https://github.com/ethz-asl/mav_control_rw](https://github.com/ethz-asl/mav_control_rw))
+    * `isaac_cv_ros` ([https://github.com/michbaum/isaac_cv_ros/](https://github.com/michbaum/isaac_cv_ros/))
 
 ## Installation
-Installation instructions for Linux/WSL2.
+Installation instructions for Linux.
 
 **Prerequisites**
 
@@ -120,8 +121,8 @@ sudo apt-get install python-wstool python-catkin-tools
 
 3. Download repo using a SSH key or via HTTPS: 
 ```shell script
-git clone git@github.com:michbaum/optimal_active_guidance_in_mixed_reality_using_prior_floorplans.git # SSH
-git clone https://github.com/michbaum/optimal_active_guidance_in_mixed_reality_using_prior_floorplans.git # HTTPS
+git clone git@github.com:ehosko/optimal_active_guidance_in_mixed_reality_using_prior_floorplans.git # SSH
+git clone https://github.com/ehosko/optimal_active_guidance_in_mixed_reality_using_prior_floorplans.git # HTTPS
 ```
 
 4. Download and install the dependencies of the packages you intend to use. (Full Install recommended)
@@ -148,7 +149,7 @@ source ../devel/setup.bash # -> optionally add source WS_FOLDER/devel/setup.bash
 
 *Troubleshooting*: In case the catkin build fails due to glog issues, try to set the USE_SYSTEM_GLOG variable to "OFF" in the CMakeLists.txt file of glog catkin.
 
-## Data Repository
+<!-- ## Data Repository
 Related resources, such as experiment scenarios and ground truth point clouds, can be downloaded from [here](https://www.polybox.ethz.ch/index.php/s/6vhPDINcISbEogg). 
 
 # Examples
@@ -195,4 +196,4 @@ Distribution of computation time for the different modules. The majority is expe
 
 
 ![mav_active](https://user-images.githubusercontent.com/36043993/59349935-253e8b00-8d1b-11e9-87d8-6d57463b9596.png)
-Final reconstruction mesh and error coloring visualized in CloudCompare.
+Final reconstruction mesh and error coloring visualized in CloudCompare.-->
