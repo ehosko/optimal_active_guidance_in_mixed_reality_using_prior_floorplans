@@ -37,7 +37,7 @@ Two simulation environments, a maze, and a warehouse, are made available for Isa
 ```
 roslaunch active_3d_planning_app_reconstruction example_isaac.launch planner_config:=planners/example_config.yaml
 ```
-
+You should see the Isaac Sim Game Play changing views, and rviz showing the planned trajectory and moving agents.
 
 <!-- # Test Installation
 
